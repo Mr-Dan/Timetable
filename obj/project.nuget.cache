@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "bTmIL1QiRyYDket+IPxrcaxvSOa0uXRd9G0Ou+9Xg1SBOk6d2QBf6GMcSf7DVq3bbJhVHRvtVVUHDuQPY2WLlQ==",
+  "success": true,
+  "projectFilePath": "D:\\GitHub\\Timetable\\Timetable\\Timetable.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\lopji\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\6.0.0\\microsoft.extensions.logging.abstractions.6.0.0.nupkg.sha512",
+    "C:\\Users\\lopji\\.nuget\\packages\\npgsql\\7.0.1\\npgsql.7.0.1.nupkg.sha512",
+    "C:\\Users\\lopji\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
