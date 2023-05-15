@@ -10,7 +10,7 @@ namespace Timetable.Models
     {
         public int Id { get; set; }
         public int IdGroups { get; set; }
-        public Group Group { get; set; } = new Group();
+        public GroupTable Group { get; set; } = new GroupTable();
 
         public static Dictionary<string, string> Title { get; set; } =
             new Dictionary<string, string>()
@@ -73,7 +73,7 @@ namespace Timetable.Models
                 }
                 else if (title[i] == "recruitmentYear")
                 {
-                    groups.Group.RecruitmentYear = objects[i].ToString();
+                    groups.Group.RecruitmentYear = Convert.ToDateTime(objects[i].ToString());
                 }
                 else if (title[i] == "amount")
                 {
@@ -87,7 +87,7 @@ namespace Timetable.Models
                 {
                     groups.Group.Faculty.Departments.Name = objects[i].ToString();
                 }
-                else if (title[i] == "Id")
+                else if (title[i] == "id")
                 {
                     groups.Id = Convert.ToInt32(objects[i].ToString());
                 }
@@ -95,6 +95,110 @@ namespace Timetable.Models
             }
             OrderTitle = new List<string>(title);
             return groups;
+        }
+
+        public string GetGroupsValue(string title)
+        {
+            if (title == "idfaculty")
+            {
+                return Group.Faculty.Id.ToString();
+            }
+            else if (title == "namefaculty")
+            {
+                return Group.Faculty.Name;
+            }
+            else if (title == "iddepartments")
+            {
+                return Group.Faculty.Departments.Id.ToString();
+            }
+            else if (title == "idgroup")
+            {
+                return Group.Id.ToString();
+            }
+            else if (title == "namegroup")
+            {
+                return Group.Name;
+            }
+            else if (title == "formeducation")
+            {
+                return Group.Formeducation;
+            }
+            else if (title == "recruitmentYear")
+            {
+                return Group.RecruitmentYear.ToString();
+            }
+            else if (title == "amount")
+            {
+                return Group.Amount.ToString();
+            }
+            else if (title == "idgroups")
+            {
+                return IdGroups.ToString();
+            }
+            else if (title == "namedepartments")
+            {
+                return Group.Faculty.Departments.Name;
+            }
+            else if (title == "id")
+            {
+                return Id.ToString();
+            }
+            return null;
+        }
+
+        public object[] ConvertToObject(List<string> title)
+        {
+            object[] objects = new object[title.Count];
+
+            for (int i = 0; i < title.Count; i++)
+            {
+                if (title[i] == "idfaculty")
+                {
+                    objects[i] = Group.Faculty.Id;
+                }
+                else if (title[i] == "namefaculty")
+                {
+                    objects[i] =  Group.Faculty.Name ;
+                }
+                else if (title[i] == "iddepartments")
+                {
+                    objects[i] =  Group.Faculty.Departments.Id ;
+                }
+                else if (title[i] == "idgroup")
+                {
+                    objects[i] = Group.Id;
+                }
+                else if (title[i] == "namegroup")
+                {
+                    objects[i] = Group.Name;
+                }
+                else if (title[i] == "formeducation")
+                {
+                    objects[i] = Group.Formeducation;
+                }
+                else if (title[i] == "recruitmentYear")
+                {
+                    objects[i] = Group.RecruitmentYear;
+                }
+                else if (title[i] == "amount")
+                {
+                    objects[i] = Group.Amount;
+                }
+                else if (title[i] == "idgroups")
+                {
+                    objects[i] = IdGroups;
+                }
+                else if (title[i] == "namedepartments")
+                {
+                    objects[i] = Group.Faculty.Departments.Name;
+                }
+                else if (title[i] == "id")
+                {
+                    objects[i] = Id;
+                }
+
+            }
+            return objects;
         }
     }
 }

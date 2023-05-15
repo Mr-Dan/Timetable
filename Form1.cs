@@ -13,8 +13,8 @@ namespace Timetable
         private readonly string conn_param = "Server=127.0.0.1;Port=5432;User Id=postgres;Password=368;Database=timetabledb;";
 
 
-        private readonly Color activeBackColorButton = Color.Green;
-        private readonly Color inactiveBackColorButton = Color.White;
+        private readonly Color activeBackColorButton = Color.FromArgb(239, 241, 242);
+        private readonly Color inactiveBackColorButton = Color.FromArgb(208, 218, 220);
 
         private readonly Color activeForeColorButton = Color.Black;
         private readonly Color inactiveForeColorButton = Color.Black;
@@ -29,21 +29,22 @@ namespace Timetable
             activeForm?.Close();
 
             //ActiveButtton(btnSender);
-            activeForm= childForm;
+            activeForm = childForm;
             childForm.TopLevel = false;
             childForm.FormBorderStyle = FormBorderStyle.None;
             childForm.Dock = DockStyle.Fill;
             panelMain.Controls.Add(childForm);
-            panelMain.Tag= childForm;
+            panelMain.Tag = childForm;
             childForm.BringToFront();
             childForm.Show();
+            ActiveButtton(btnSender);
         }
 
         private void ActiveButtton(object btnSender)
         {
-            if(btnSender != null)
+            if (btnSender != null)
             {
-                if(currentButton != (Button)btnSender)
+                if (currentButton != (Button)btnSender)
                 {
                     DisableButton(currentButton);
                     currentButton = (Button)btnSender;
@@ -57,14 +58,17 @@ namespace Timetable
         {
             if (currentButton != null)
             {
-                currentButton.BackColor= inactiveBackColorButton;
-                currentButton.ForeColor=inactiveForeColorButton;
+                currentButton.BackColor = inactiveBackColorButton;
+                currentButton.ForeColor = inactiveForeColorButton;
             }
         }
 
         private void Button1_Click(object sender, EventArgs e)
         {
-            OpenChildForm(new Form3(), sender);
+            if (conn?.State == ConnectionState.Open)
+            {
+                OpenChildForm(new TimetableSet(conn), sender);
+            }
         }
 
         private void buttonDB_Click(object sender, EventArgs e)
@@ -79,6 +83,7 @@ namespace Timetable
         {
             try
             {
+
                 Button btn = (Button)sender;
                 conn = new NpgsqlConnection(conn_param);
                 conn.Open();
@@ -86,12 +91,17 @@ namespace Timetable
                 {
                     btn.BackColor = activeBackColorButton;
                     MessageBox.Show("Подключено");
+                    buttonDB.Visible = true;
+                    buttonTimetable.Visible = true;
                 }
                 else
                 {
                     btn.BackColor = inactiveBackColorButton;
                     MessageBox.Show("Соединения нет");
+                    buttonDB.Visible = false;
+                    buttonTimetable.Visible = false;
                 }
+
             }
             catch (Exception ex)
             {

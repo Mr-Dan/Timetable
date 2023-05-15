@@ -28,92 +28,90 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.panelMenuLeft = new System.Windows.Forms.Panel();
-            this.buttonConnect = new System.Windows.Forms.Button();
-            this.buttonSettings = new System.Windows.Forms.Button();
-            this.buttonDB = new System.Windows.Forms.Button();
-            this.buttonTimetable = new System.Windows.Forms.Button();
-            this.panelMain = new System.Windows.Forms.Panel();
-            this.panelMenuLeft.SuspendLayout();
-            this.SuspendLayout();
+            panelMenuLeft = new Panel();
+            buttonConnect = new Button();
+            buttonDB = new Button();
+            buttonTimetable = new Button();
+            panelMain = new Panel();
+            panelMenuLeft.SuspendLayout();
+            SuspendLayout();
             // 
             // panelMenuLeft
             // 
-            this.panelMenuLeft.BackColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.panelMenuLeft.Controls.Add(this.buttonConnect);
-            this.panelMenuLeft.Controls.Add(this.buttonSettings);
-            this.panelMenuLeft.Controls.Add(this.buttonDB);
-            this.panelMenuLeft.Controls.Add(this.buttonTimetable);
-            this.panelMenuLeft.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelMenuLeft.Location = new System.Drawing.Point(0, 0);
-            this.panelMenuLeft.Name = "panelMenuLeft";
-            this.panelMenuLeft.Size = new System.Drawing.Size(216, 647);
-            this.panelMenuLeft.TabIndex = 1;
+            panelMenuLeft.BackColor = Color.FromArgb(178, 186, 191);
+            panelMenuLeft.Controls.Add(buttonConnect);
+            panelMenuLeft.Controls.Add(buttonDB);
+            panelMenuLeft.Controls.Add(buttonTimetable);
+            panelMenuLeft.Dock = DockStyle.Left;
+            panelMenuLeft.Location = new Point(0, 0);
+            panelMenuLeft.Name = "panelMenuLeft";
+            panelMenuLeft.Size = new Size(190, 753);
+            panelMenuLeft.TabIndex = 1;
             // 
             // buttonConnect
             // 
-            this.buttonConnect.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.buttonConnect.Location = new System.Drawing.Point(0, 598);
-            this.buttonConnect.Name = "buttonConnect";
-            this.buttonConnect.Size = new System.Drawing.Size(216, 49);
-            this.buttonConnect.TabIndex = 3;
-            this.buttonConnect.Text = "Подключение";
-            this.buttonConnect.UseVisualStyleBackColor = true;
-            this.buttonConnect.Click += new System.EventHandler(this.buttonConnect_Click);
-            // 
-            // buttonSettings
-            // 
-            this.buttonSettings.Dock = System.Windows.Forms.DockStyle.Top;
-            this.buttonSettings.Location = new System.Drawing.Point(0, 98);
-            this.buttonSettings.Name = "buttonSettings";
-            this.buttonSettings.Size = new System.Drawing.Size(216, 49);
-            this.buttonSettings.TabIndex = 2;
-            this.buttonSettings.Text = "Настройки";
-            this.buttonSettings.UseVisualStyleBackColor = true;
+            buttonConnect.BackColor = Color.FromArgb(224, 227, 229);
+            buttonConnect.Dock = DockStyle.Bottom;
+            buttonConnect.FlatAppearance.BorderSize = 0;
+            buttonConnect.FlatStyle = FlatStyle.Flat;
+            buttonConnect.Location = new Point(0, 704);
+            buttonConnect.Name = "buttonConnect";
+            buttonConnect.Size = new Size(190, 49);
+            buttonConnect.TabIndex = 3;
+            buttonConnect.Text = "Подключение";
+            buttonConnect.UseVisualStyleBackColor = false;
+            buttonConnect.Click += buttonConnect_Click;
             // 
             // buttonDB
             // 
-            this.buttonDB.Dock = System.Windows.Forms.DockStyle.Top;
-            this.buttonDB.Location = new System.Drawing.Point(0, 49);
-            this.buttonDB.Name = "buttonDB";
-            this.buttonDB.Size = new System.Drawing.Size(216, 49);
-            this.buttonDB.TabIndex = 1;
-            this.buttonDB.Text = "Заполения данных в бд";
-            this.buttonDB.UseVisualStyleBackColor = true;
-            this.buttonDB.Click += new System.EventHandler(this.buttonDB_Click);
+            buttonDB.BackColor = Color.FromArgb(224, 227, 229);
+            buttonDB.Dock = DockStyle.Top;
+            buttonDB.FlatAppearance.BorderSize = 0;
+            buttonDB.FlatStyle = FlatStyle.Flat;
+            buttonDB.Location = new Point(0, 70);
+            buttonDB.Name = "buttonDB";
+            buttonDB.Size = new Size(190, 70);
+            buttonDB.TabIndex = 1;
+            buttonDB.Text = "Заполения данных в бд";
+            buttonDB.UseVisualStyleBackColor = false;
+            buttonDB.Visible = false;
+            buttonDB.Click += buttonDB_Click;
             // 
             // buttonTimetable
             // 
-            this.buttonTimetable.Dock = System.Windows.Forms.DockStyle.Top;
-            this.buttonTimetable.Location = new System.Drawing.Point(0, 0);
-            this.buttonTimetable.Name = "buttonTimetable";
-            this.buttonTimetable.Size = new System.Drawing.Size(216, 49);
-            this.buttonTimetable.TabIndex = 0;
-            this.buttonTimetable.Text = "Составить расписание";
-            this.buttonTimetable.UseVisualStyleBackColor = true;
-            this.buttonTimetable.Click += new System.EventHandler(this.Button1_Click);
+            buttonTimetable.BackColor = Color.FromArgb(224, 227, 229);
+            buttonTimetable.Dock = DockStyle.Top;
+            buttonTimetable.FlatAppearance.BorderSize = 0;
+            buttonTimetable.FlatStyle = FlatStyle.Flat;
+            buttonTimetable.Location = new Point(0, 0);
+            buttonTimetable.Name = "buttonTimetable";
+            buttonTimetable.Size = new Size(190, 70);
+            buttonTimetable.TabIndex = 0;
+            buttonTimetable.Text = "Составить расписание";
+            buttonTimetable.UseVisualStyleBackColor = false;
+            buttonTimetable.Visible = false;
+            buttonTimetable.Click += Button1_Click;
             // 
             // panelMain
             // 
-            this.panelMain.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.panelMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelMain.Location = new System.Drawing.Point(216, 0);
-            this.panelMain.Name = "panelMain";
-            this.panelMain.Size = new System.Drawing.Size(1528, 647);
-            this.panelMain.TabIndex = 2;
+            panelMain.BackColor = Color.FromArgb(168, 176, 181);
+            panelMain.Dock = DockStyle.Fill;
+            panelMain.Location = new Point(190, 0);
+            panelMain.Name = "panelMain";
+            panelMain.Size = new Size(1562, 753);
+            panelMain.TabIndex = 2;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1744, 647);
-            this.Controls.Add(this.panelMain);
-            this.Controls.Add(this.panelMenuLeft);
-            this.Name = "Form1";
-            this.Text = "Form1";
-            this.panelMenuLeft.ResumeLayout(false);
-            this.ResumeLayout(false);
-
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(1752, 753);
+            Controls.Add(panelMain);
+            Controls.Add(panelMenuLeft);
+            Name = "Form1";
+            Text = "Form1";
+            panelMenuLeft.ResumeLayout(false);
+            ResumeLayout(false);
         }
 
         #endregion
@@ -122,7 +120,6 @@
         private Panel panelMain;
         private Button buttonDB;
         private Button buttonTimetable;
-        private Button buttonSettings;
         private Button buttonConnect;
     }
 }

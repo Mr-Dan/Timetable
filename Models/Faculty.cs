@@ -6,13 +6,59 @@ using System.Threading.Tasks;
 
 namespace Timetable.Models
 {
-    internal class Faculty
+    public class Faculty
     {
+        private int id;
+        private string name;
+        private Departments departments = new Departments();
+        public int Id
+        {
+            get
+            {
+                return id; // получаем данные
+            }
+            set
+            {
+                if (value < 0)// Если данные не проходят, то выкидываем ошибку
+                {
+                    throw new Exception("Значение не может быть меньше 0");
+                }
+                else // Иначе записывем 
+                {
+                    id = value;
+                }
+            }
+        }
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+            set
+            {
+                if (value == "" || value == null)
+                {
+                    throw new Exception("Значение не может быть пустым");
+                }
+                else
+                {
+                    name = value;
+                }
+            }
+        }
 
-        public int Id { get; set; }
-        public string Name { get; set; }
-
-        public Departments Departments { get; set; } = new Departments();
+        public Departments Departments
+        {
+            get
+            {
+                return departments; // получаем данные
+            }
+            set
+            {
+                departments = value;
+            }
+        }
         public static Dictionary<string, string> Title { get; set; } =
             new Dictionary<string, string>()
             {
@@ -38,7 +84,7 @@ namespace Timetable.Models
         public static Faculty GetFaculty(object[] objects, List<string> title)
         {
             Faculty faculty = new Faculty();
-
+            //faculty.departments = new Departments();
             for (int i = 0; i < title.Count; i++)
             {
                 if (title[i] == "idfaculty")
@@ -61,6 +107,55 @@ namespace Timetable.Models
             }
             OrderTitle = new List<string>(title);
             return faculty;
+        }
+
+        public string GetFacultyValue(string title)
+        {
+
+            if (title == "idfaculty")
+            {
+                return Id.ToString();
+            }
+            else if (title == "namefaculty")
+            {
+                return Name;
+            }
+            else if (title == "iddepartments")
+            {
+                return Departments.Id.ToString();
+            }
+            else if (title == "namedepartments")
+            {
+                return Departments.Name;
+            }
+
+            return null;
+        }
+        public object[] ConvertToObject(List<string> title)
+        {
+            object[] objects = new object[title.Count];
+
+            for (int i = 0; i < title.Count; i++)
+            {
+                if (title[i] == "idfaculty")
+                {
+                    objects[i] = Id;
+                }
+                else if (title[i] == "namefaculty")
+                {
+                    objects[i] = Name;
+                }
+                else if (title[i] == "iddepartments")
+                {
+                    objects[i] = Departments.Id;
+                }
+                else if (title[i] == "namedepartments")
+                {
+                    objects[i] = Departments.Name;
+                }
+
+            }
+            return objects;
         }
     }
 }

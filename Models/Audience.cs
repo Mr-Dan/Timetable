@@ -14,7 +14,7 @@ namespace Timetable.Models
         private string? address;
         private string? type;
         public int capacity;
-        public TimeSpan? travelTime;
+        public TimeSpan travelTime;
 
         public int Id
         {
@@ -35,7 +35,8 @@ namespace Timetable.Models
             }
         }
 
-        public string? Name {
+        public string Name 
+        {
             get
             {
                 return name;
@@ -53,7 +54,7 @@ namespace Timetable.Models
             }
         }
 
-        public string? Address
+        public string Address
         {
             get
             {
@@ -72,7 +73,7 @@ namespace Timetable.Models
             }
         }
 
-        public string? Type {
+        public string Type {
             get
             {
                 return type;
@@ -108,7 +109,8 @@ namespace Timetable.Models
             }
         }
 
-        public TimeSpan? TravelTime {
+        public TimeSpan TravelTime 
+        {
             get
             {
                 return travelTime;
@@ -125,10 +127,11 @@ namespace Timetable.Models
                 }
             }
         }
-
+    
         public static Dictionary<string, string> Title { get; set; } =
         new Dictionary<string, string>
         {
+
                 { "idaudience", "Id" },
                 { "nameaudience", "Название" },
                 { "address", "Адрес" },
@@ -154,7 +157,7 @@ namespace Timetable.Models
         }
 
         public static Audience GetAudience(object[] objects, List<string> title)
-        {    
+        {   
             Audience audience = new Audience();
             for (int i = 0; i < title.Count; i++)
             {
@@ -189,7 +192,7 @@ namespace Timetable.Models
 
         public string GetAudienceValue(string title)
         {
-
+            // Функция для получения данных с помощью имен полей таблицы.
             if (title == "idaudience")
             {
                 return Id.ToString();
@@ -214,18 +217,48 @@ namespace Timetable.Models
             {
                 return TravelTime.ToString();
             }
-
             return null;
+        }
+
+        public object[] ConvertToObject(List<string> title)
+        {
+            object[] objects = new object[title.Count];
+
+            for (int i = 0; i < title.Count; i++)
+            {
+                if (title[i] == "idaudience")
+                {
+                    objects[i]= Id.ToString();
+                }
+                else if (title[i] == "nameaudience")
+                {
+                    objects[i] = Name;
+                }
+                else if (title[i] == "address")
+                {
+                    objects[i] = Address;
+                }
+                else if (title[i] == "typeaudience")
+                {
+                    objects[i] = Type;
+                }
+                else if (title[i] == "capacity")
+                {
+                    objects[i] = Capacity.ToString();
+                }
+                else if (title[i] == "traveltime")
+                {
+                    objects[i] = TravelTime.ToString();
+                }
+            }   
+                   return objects;
         }
 
         public static bool operator ==(Audience a1, Audience a2)
         {
             return a1.Id == a2.Id && a1.Name == a2.Name && a1.Address == a2.Address && a1.Type == a2.Type && a1.Capacity == a2.Capacity && a1.TravelTime == a2.TravelTime;
         }
-        public static bool operator !=(Audience a1, Audience a2)
-        {
-            return a1.Id != a2.Id && a1.Name != a2.Name && a1.Address != a2.Address && a1.Type != a2.Type && a1.Capacity != a2.Capacity && a1.TravelTime != a2.TravelTime;
-        }
-
+        public static bool operator !=(Audience a1, Audience a2) => !(a1 == a2);
+              
     }
 }

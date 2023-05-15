@@ -4,16 +4,52 @@
     <Compile Update="Controls\AudienceControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="Controls\AudienceFundControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\CurriculumControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\CurriculumDisciplineControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\DepartmentsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\DisciplineControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\FacultyControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\GroupControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\GroupsControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\HeadDepartmentControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\SelectControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\SelectOneControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\TeacherControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="Controls\TimeTableControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\DBForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="Forms\Form3.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="Forms\Form2.cs">
+    <Compile Update="Forms\TimetableSet.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
