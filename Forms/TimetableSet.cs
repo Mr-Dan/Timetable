@@ -345,9 +345,10 @@ namespace Timetable.Forms
                 MessageBox.Show("Выберете группу");
             }
         }
-
+        bool generator = false;
         private void TimeTableSet(Plan plan)
         {
+            generator = true;
             for (int day = 0; day < Plan.DaysPerWeek; day++)
             {
                 for (int hour = 0; hour < Plan.HoursPerDay; hour++)
@@ -375,6 +376,7 @@ namespace Timetable.Forms
                     }
                 }
             }
+            generator = false;
             //for(plan.HourPlans)
         }
 
@@ -723,58 +725,51 @@ namespace Timetable.Forms
                     }
                 }
 
-                if (FourLessonGroups(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString()) )
-                {
-                    if (FourLessonTeacher(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[idteacher].Value.ToString()))
+                if (generator == false) {
+                    if (dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value != null)
                     {
-                        if (NotBusyGroups(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[classtime].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[periodicity].Value.ToString()))
+
+                        if (FourLessonGroups(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString()))
                         {
-                            if (NotBusyTeacher(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[classtime].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[idteacher].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[periodicity].Value.ToString()))
+                            if (FourLessonTeacher(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[idteacher].Value.ToString()))
                             {
-                                Models.Timetable timetable = Models.Timetable.GetTimetable(GetValueDataGrid(e.RowIndex), Models.Timetable.OrderTitle); //Получаем изменения
-                                                                                                                                                       //   if (FourLesson(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString())) {
-                                int idFindNew = timetablesListUpdate.FindIndex(id => id.Id == timetable.Id); // Если нашли в списке для обновленмй
-                                if (idFindNew > -1)
-                                {// То обновляем данные 
-                                    timetablesListUpdate[idFindNew].Id = timetable.Id;
-                                    timetablesListUpdate[idFindNew].WeekDay = timetable.WeekDay;
-                                    timetablesListUpdate[idFindNew].ClassTime = timetable.ClassTime;
-                                    timetablesListUpdate[idFindNew].Audience.Id = timetable.Audience.Id;
-                                    if (timetable.Audience.Name != null)
-                                        timetablesListUpdate[idFindNew].Audience.Name = timetable.Audience.Name;
-                                    timetablesListUpdate[idFindNew].Periodicity = timetable.Periodicity;
-                                    int idFindOld = timetablesList.FindIndex(id => id.Id == timetablesListUpdate[idFindNew].Id);// Преверяем внесенные данные
-                                    if (timetablesListUpdate[idFindNew] == timetablesList[idFindOld])// Если данные вернулись к первоначальным 
-                                    { //То удаляем из списка для обновлений
-                                        timetablesListUpdate.RemoveAt(idFindNew);
+                                if (NotBusyGroups(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[classtime].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[periodicity].Value.ToString()))
+                                {
+                                    if (NotBusyTeacher(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[classtime].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[idteacher].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[periodicity].Value.ToString()))
+                                    {
+                                        SetListUpdate(e.RowIndex);
                                     }
+                                    else
+                                    {
+                                        MessageBox.Show("В это время уже есть пара у этого преподователя");
+                                    }
+
                                 }
-                                else// Если не нашли
-                                {// То добавляем данные 
-                                    timetablesListUpdate.Add(timetable);
-                                    // dataGridViewTable.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.Gray;
+                                else
+                                {
+                                    MessageBox.Show("В это время уже есть пара у этой группы");
                                 }
                             }
                             else
                             {
-                                MessageBox.Show("В это время уже есть пара у этого преподователя");
+                                MessageBox.Show("Пар уже больше 4 у преподователя ");
                             }
-
                         }
                         else
                         {
-                            MessageBox.Show("В это время уже есть пара у этой группы");
+                            MessageBox.Show("Пар уже больше 4  у группы");
                         }
                     }
                     else
                     {
-                        MessageBox.Show("Пар уже больше 4 у преподователя ");
+                        SetListUpdate(e.RowIndex);
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Пар уже больше 4  у группы");
+                    SetListUpdate(e.RowIndex);
                 }
+
                 // }
                 //else
                 //{
@@ -783,6 +778,33 @@ namespace Timetable.Forms
 
             }
 
+        }
+
+        private void SetListUpdate(int rowIndex)
+        {
+            Models.Timetable timetable = Models.Timetable.GetTimetable(GetValueDataGrid(rowIndex), Models.Timetable.OrderTitle); //Получаем изменения
+                                                                                                                                   //   if (FourLesson(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString())) {
+            int idFindNew = timetablesListUpdate.FindIndex(id => id.Id == timetable.Id); // Если нашли в списке для обновленмй
+            if (idFindNew > -1)
+            {// То обновляем данные 
+                timetablesListUpdate[idFindNew].Id = timetable.Id;
+                timetablesListUpdate[idFindNew].WeekDay = timetable.WeekDay;
+                timetablesListUpdate[idFindNew].ClassTime = timetable.ClassTime;
+                timetablesListUpdate[idFindNew].Audience.Id = timetable.Audience.Id;
+                if (timetable.Audience.Name != null)
+                    timetablesListUpdate[idFindNew].Audience.Name = timetable.Audience.Name;
+                timetablesListUpdate[idFindNew].Periodicity = timetable.Periodicity;
+                int idFindOld = timetablesList.FindIndex(id => id.Id == timetablesListUpdate[idFindNew].Id);// Преверяем внесенные данные
+                if (timetablesListUpdate[idFindNew] == timetablesList[idFindOld])// Если данные вернулись к первоначальным 
+                { //То удаляем из списка для обновлений
+                    timetablesListUpdate.RemoveAt(idFindNew);
+                }
+            }
+            else// Если не нашли
+            {// То добавляем данные 
+                timetablesListUpdate.Add(timetable);
+                // dataGridViewTable.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.Gray;
+            }
         }
 
         private object[] GetValueDataGrid(int row) // Функция для получения данных из строки DataGridView
