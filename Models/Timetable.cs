@@ -153,13 +153,21 @@ namespace Timetable.Models
             return timetable;
         }
 
-        public string GetAudienceValue(string title)
+        public string GetTimetableValue(string title)
         {
             // Функция для получения данных с помощью имен полей таблицы.
             
             if (title == "idtimetable")
             {
                 return Id.ToString();
+            }
+            else if (title == "idgroups")
+            {
+                return Group.Id.ToString();
+            }
+            else if (title == "idteacher")
+            {
+                return Teacher.Id.ToString();
             }
             else if (title == "namegroup")
             {
@@ -208,6 +216,10 @@ namespace Timetable.Models
             else if (title == "nameaudience")
             {
                 return Audience.Name;
+            }            
+            else if (title == "idaudience")
+            {
+                return Audience.Id.ToString();
             }
             return null;
         }
@@ -277,6 +289,10 @@ namespace Timetable.Models
                 else if (title[i] == "idtimetable")
                 {
                     objects[i] = Id;
+                }              
+                else if (title[i] == "idaudience")
+                {
+                    objects[i] =  Audience.Id;
                 }
             }
 

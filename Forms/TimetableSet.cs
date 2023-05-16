@@ -248,7 +248,7 @@ namespace Timetable.Forms
 
                 if (item.IndexOf("id") > -1)
                 {
-                    dataGridViewTable.Columns[item].Visible = false;
+                   // dataGridViewTable.Columns[item].Visible = false;
                 }
             }
 
@@ -725,39 +725,48 @@ namespace Timetable.Forms
                     }
                 }
 
-                if (generator == false) {
-                    if (dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value != null)
+                try
+                {
+                    if (generator == false)
                     {
-
-                        if (FourLessonGroups(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString()))
+                        if (dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value != null)
                         {
-                            if (FourLessonTeacher(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[idteacher].Value.ToString()))
+
+                            if ( FourLessonGroups(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString()))
                             {
-                                if (NotBusyGroups(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[classtime].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[periodicity].Value.ToString()))
+                                if (FourLessonTeacher(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[idteacher].Value.ToString()))
                                 {
-                                    if (NotBusyTeacher(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[classtime].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[idteacher].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[periodicity].Value.ToString()))
+                                    if (dataGridViewTable.Rows[e.RowIndex].Cells[classtime].Value != null && NotBusyGroups(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[classtime].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[periodicity].Value.ToString()))
                                     {
-                                        SetListUpdate(e.RowIndex);
+                                        if (NotBusyTeacher(dataGridViewTable.Rows[e.RowIndex].Cells[weekday].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[classtime].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[idteacher].Value.ToString(), dataGridViewTable.Rows[e.RowIndex].Cells[periodicity].Value.ToString()))
+                                        {
+                                            SetListUpdate(e.RowIndex);
+                                        }
+                                        else
+                                        {
+                                            throw new Exception("В это время уже есть пара у этого преподователя");
+                                             
+                                        }
+
                                     }
                                     else
                                     {
-                                        MessageBox.Show("В это время уже есть пара у этого преподователя");
+                                        throw new Exception("В это время уже есть пара у этой группы");
                                     }
-
                                 }
                                 else
                                 {
-                                    MessageBox.Show("В это время уже есть пара у этой группы");
+                                    throw new Exception("Пар уже больше 4 у преподователя ");
                                 }
                             }
                             else
                             {
-                                MessageBox.Show("Пар уже больше 4 у преподователя ");
+                                throw new Exception("Пар уже больше 4  у группы");
                             }
                         }
                         else
                         {
-                            MessageBox.Show("Пар уже больше 4  у группы");
+                            SetListUpdate(e.RowIndex);
                         }
                     }
                     else
@@ -765,9 +774,20 @@ namespace Timetable.Forms
                         SetListUpdate(e.RowIndex);
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    SetListUpdate(e.RowIndex);
+                    MessageBox.Show(ex.Message);
+
+                    backup = true;
+                    MessageBox.Show(ex.Message);
+                    int pos = dataGridViewTable.Columns["idtimetable"].Index;// Ищем позицию id
+                    int index = Convert.ToInt32(dataGridViewTable.Rows[e.RowIndex].Cells[pos].Value);//Ищем index
+                   Models.Timetable timetable = timetablesList.Find(f => f.Id == index);// Ищем данные по index
+                    for (int i = 0; i < dataGridViewTable.ColumnCount; i++)
+                    {   // Восстанавливаем данные 
+                        dataGridViewTable.Rows[e.RowIndex].Cells[i].Value = timetable.GetTimetableValue(dataGridViewTable.Columns[i].Name);
+                    }
+                    backup = false;
                 }
 
                 // }
@@ -872,10 +892,9 @@ namespace Timetable.Forms
                 {
                     backup = true;
                     dataGridViewTable.Rows[e.RowIndex].Cells[classtime].Value = "";
-                    dataGridViewTable.Rows[e.RowIndex].Cells[nameaudience].Value = "";
-                    backup = false;
+                    dataGridViewTable.Rows[e.RowIndex].Cells[nameaudience].Value = "";                  
                     dataGridViewTable.Rows[e.RowIndex].Cells[idaudience].Value = "";
-
+                    backup = false;
 
                     selectOneControl = new SelectOneControl(conn, "weekday", this, dataGridViewTable.Rows[e.RowIndex].Cells[weekday])
                     {
@@ -891,9 +910,9 @@ namespace Timetable.Forms
                     //if (!SqlAssistant.CheckInfo($"SELECT * FROM timetable WHERE idgroups = ANY (SELECT idgroups FROM groups LEFT JOIN grouptable USING(idgroup) WHERE namegroup = '{txtGroup.Text}') AND weekday ='{}' AND classtime ='{}';", conn)) // Если не нашли
                     //{
                     backup = true;
-                    dataGridViewTable.Rows[e.RowIndex].Cells[nameaudience].Value = "";
-                    backup = false;
+                    dataGridViewTable.Rows[e.RowIndex].Cells[nameaudience].Value = "";                   
                     dataGridViewTable.Rows[e.RowIndex].Cells[idaudience].Value = "";
+                    backup = false;
 
                     selectOneControl = new SelectOneControl(conn, "classtime", this, dataGridViewTable.Rows[e.RowIndex].Cells[classtime])
                     {
