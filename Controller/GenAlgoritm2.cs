@@ -11,11 +11,10 @@ using System.Threading.Tasks;
 using Timetable.Models;
 
 namespace Timetable.Controller
-{
-   
+{/*
     class GenAlgoritm
     {
-        public static Dictionary<int, int> GroupLessen;
+        public static Dictionary<List<int>, int> GroupLessen;
         public static List<AudienceDayHour> AudienceList;
         public static List<GroupGen> GroupGenBusy;
         // 1 = каждый  2 - числитель 3 - знаменатель переодичность
@@ -25,7 +24,7 @@ namespace Timetable.Controller
 
             try
             {
-            GroupLessen = new Dictionary<int, int>();
+            GroupLessen = new Dictionary<List<int>, int>();
             AudienceList = audienceList;
             GroupGenBusy = groupGenBusy;
 
@@ -33,11 +32,11 @@ namespace Timetable.Controller
             var list = new List<Lessоn>();
             for (int i = 0; i < groups.Count; i++)
             {
-                if (!GroupLessen.ContainsKey(groups[i].Id))
+                if (!GroupLessen.ContainsKey(groups[i].IdList))
                 {
-                    GroupLessen.Add(groups[i].Id, 1);
+                    GroupLessen.Add(groups[i].IdList, 1);
                 }
-                else { GroupLessen[groups[i].Id]++; }
+                else { GroupLessen[groups[i].IdList]++; }
 
 
                 list.Add(new Lessоn(groups[i], new AudienceDayHour()));
@@ -46,11 +45,11 @@ namespace Timetable.Controller
             // добавляем предметы распределенных десциплин
             for (int i = 0; i < groupGenBusy.Count; i++)
             {
-                if (!GroupLessen.ContainsKey(groupGenBusy[i].Id))
+                if (!GroupLessen.ContainsKey(groupGenBusy[i].IdList))
                 {
-                    GroupLessen.Add(groupGenBusy[i].Id, 1);
+                    GroupLessen.Add(groupGenBusy[i].IdList, 1);
                 }
-                else { GroupLessen[groupGenBusy[i].Id]++; }
+                else { GroupLessen[groupGenBusy[i].IdList]++; }
             }
 
             var solver = new Gen();
@@ -59,9 +58,9 @@ namespace Timetable.Controller
             Plan.HoursPerDay = 6; // Время пар
 
             solver.FitnessFunctions.Add(FitnessFunctions.Windows);//будем штрафовать за окна
-            solver.FitnessFunctions.Add(FitnessFunctions.OneLesson);//будем штрафовать за одну пару
-            solver.FitnessFunctions.Add(FitnessFunctions.MoreFourLesson);//будем штрафовать за больше 4 пары
-            solver.FitnessFunctions.Add(FitnessFunctions.LessonCount);//большое количество предметов
+           // solver.FitnessFunctions.Add(FitnessFunctions.OneLesson);//будем штрафовать за одну пару
+           // solver.FitnessFunctions.Add(FitnessFunctions.MoreFourLesson);//будем штрафовать за больше 4 пары
+           // solver.FitnessFunctions.Add(FitnessFunctions.LessonCount);//большое количество предметов
 
             var res = solver.Solve(list);//находим лучший план
 
@@ -87,8 +86,8 @@ namespace Timetable.Controller
         /// Штраф за окна
         public static Fitness Windows(Plan planOld)
         {
-            Fitness fitness = new Fitness();
-            Plan plan = ComboPlan(planOld);
+           Fitness fitness = new Fitness();
+             Plan plan = ComboPlan(planOld);
             for (int day = 0; day < Plan.DaysPerWeek; day++)
             {
                 List<Lessоn> windowsLessоns = new List<Lessоn>();
@@ -100,10 +99,10 @@ namespace Timetable.Controller
                         var teacher = lessоn.Group.Teacher;
                         var periodicity = lessоn.Group.Periodicity;
 
-                        List<Lessоn> list = windowsLessоns.FindAll(x => x.Group.Id == group.Id);
+                        List<Lessоn> list = windowsLessоns.FindAll(x => ListHealper.exists(x.Group.IdList, group.IdList));
                         if (list.Count > 0 && hour != 0)
                         {
-                            List<Lessоn> lessоnsOnehour = plan.HourPlans[day, hour - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
+                            List<Lessоn> lessоnsOnehour = plan.HourPlans[day, hour - 1].lessоns.FindAll(x => ListHealper.exists(x.Group.IdList, group.IdList));
                             if (lessоnsOnehour.Count == 0)
                             {
                                 fitness.Value += GroupWindowPenalty;
@@ -111,7 +110,7 @@ namespace Timetable.Controller
                             }
                             else if (list.Count > 1 && hour != 1)
                             {
-                                List<Lessоn> lessоnsTwohour = plan.HourPlans[day, hour - 2].lessоns.FindAll(x => x.Group.Id == group.Id);
+                                List<Lessоn> lessоnsTwohour = plan.HourPlans[day, hour - 2].lessоns.FindAll(x => ListHealper.exists(x.Group.IdList, group.IdList));
 
                                 if (lessоnsTwohour.Count != 0 && lessоnsTwohour.Count != 2) // если час - 2 не две пары
                                 {
@@ -234,11 +233,12 @@ namespace Timetable.Controller
                             }
                         }
 
-                        windowsLessоns.Add(new Lessоn(new GroupGen() { Id = group.Id }, new AudienceDayHour()));
+                        windowsLessоns.Add(new Lessоn(new GroupGen() { IdList = group.IdList }, new AudienceDayHour()));
                         windowsLessоns.Add(new Lessоn(new GroupGen() { Teacher = group.Teacher }, new AudienceDayHour()));
                     }
                 }
             }
+
             DeletePlan(planOld);
             return fitness;
         }
@@ -246,10 +246,10 @@ namespace Timetable.Controller
         public static Fitness OneLesson(Plan planOld)
         {
             Fitness fitness = new Fitness();
-            Plan plan = ComboPlan(planOld);
+           /* Plan plan = ComboPlan(planOld);
             for (byte day = 0; day < Plan.DaysPerWeek; day++)
             {
-                Dictionary<int, Periodicity> unic = new Dictionary<int, Periodicity>();
+                Dictionary<List<int>, Periodicity> unic = new Dictionary<List<int>, Periodicity>();
 
                 for (byte hour = 0; hour < Plan.HoursPerDay; hour++)
                 {
@@ -273,36 +273,42 @@ namespace Timetable.Controller
                         if (pair.Value.ch == 0 || pair.Value.z == 0)
                         {
                             fitness.Value += OneLessonPenalty;
-                            fitness.Error.Add($"Одна пара у группы {day} {pair} {pair.Value.k} {pair.Value.ch}  {pair.Value.z}");
+                            fitness.Error.Add("Одна пара у группы");
                         }
-                    
+                        if (!(pair.Value.ch == 1 && pair.Value.z == 1))
+                            if (pair.Value.ch == 1 || pair.Value.z == 1)
+                            {
+                                fitness.Value += OneLessonPenalty;
+                                fitness.Error.Add("Одна пара у группы");
+                            }
                     }
                     else if (pair.Value.k == 0)
                     {
-                        if (pair.Value.ch < 2 && pair.Value.ch != 0)
+                        if (pair.Value.ch > 0 && pair.Value.z == 1 || pair.Value.z == 0)
                         {
                             fitness.Value += OneLessonPenalty;
-                            fitness.Error.Add($"Одна пара у группы {day} {pair} {pair.Value} {pair.Value.k} {pair.Value.ch}  {pair.Value.z}");
+                            fitness.Error.Add("Одна пара у группы");
                         }
-                        else if (pair.Value.z < 2 && pair.Value.z != 0)
+
+                        if (pair.Value.z > 0 && pair.Value.ch == 1 || pair.Value.ch == 0)
                         {
                             fitness.Value += OneLessonPenalty;
-                            fitness.Error.Add($"Одна пара у группы {day} {pair} {pair.Value}  {pair.Value.k} {pair.Value.ch}  {pair.Value.z}");
+                            fitness.Error.Add("Одна пара у группы");
                         }
                     }
                 }
             }
-            DeletePlan(planOld);
+
             return fitness;
         }
 
         public static Fitness MoreFourLesson(Plan planOld)
         {
             Fitness fitness = new Fitness();
-            Plan plan = ComboPlan(planOld);
+          /*  Plan plan = ComboPlan(planOld);
             for (byte day = 0; day < Plan.DaysPerWeek; day++)
             {
-                Dictionary<int, Periodicity> groupUnic = new Dictionary<int, Periodicity>();
+                Dictionary<List<int>, Periodicity> groupUnic = new Dictionary<List<int>, Periodicity>();
                 Dictionary<int, Periodicity> teacherUnic = new Dictionary<int, Periodicity>();
                 for (byte hour = 0; hour < Plan.HoursPerDay; hour++)
                 {
@@ -343,7 +349,6 @@ namespace Timetable.Controller
                     }
                 }
             }
-            DeletePlan(planOld);
             return fitness;
         }
 
@@ -351,7 +356,7 @@ namespace Timetable.Controller
         {
             Fitness fitness = new Fitness();
             Plan plan = ComboPlan(planOld);
-            Dictionary<int, int> unic = new Dictionary<int, int>();
+            Dictionary<List<int>, int> unic = new Dictionary<List<int>, int>();
 
             for (byte day = 0; day < Plan.DaysPerWeek; day++)
             {
@@ -380,7 +385,7 @@ namespace Timetable.Controller
                     fitness.Error.Add("Больше пар");
                 }
             }
-            DeletePlan(planOld);
+
             return fitness;
         }
 
@@ -393,13 +398,13 @@ namespace Timetable.Controller
                     List<GroupGen> group = GenAlgoritm.GroupGenBusy.FindAll(x => x.Audience.day == day && x.Audience.hour == hour);
                     for (int i = 0; i < group.Count; i++)
                     {
-                        if(group[i].Id == -1)
                         plan.HourPlans[day, hour].AddLesson(group[i], group[i].Audience);
                     }
                 }
             }
             return plan;
         }
+
         private static Plan DeletePlan(Plan plan)
         {
             for (byte day = 0; day < Plan.DaysPerWeek; day++)
@@ -597,7 +602,7 @@ namespace Timetable.Controller
 
         bool DayHourAudiensFree(int day, int hour, AudienceDayHour audience, GroupGen group)
         {
-            List<GroupGen> find = GenAlgoritm.GroupGenBusy.FindAll(x => x.Audience.day == day && x.Audience.hour == hour && x.Id == group.Id);
+            List<GroupGen> find = GenAlgoritm.GroupGenBusy.FindAll(x => x.Audience.day == day && x.Audience.hour == hour && ListHealper.exists(x.IdList, group.IdList));
             foreach (var item in find)
             {
                 if (item.Periodicity == 1) return false;
@@ -687,12 +692,14 @@ namespace Timetable.Controller
 
         public List<Lessоn> lessоns = new List<Lessоn>();
 
+       
+
         public bool AddLesson(GroupGen group, AudienceDayHour audiens)
         {
             int indexTeacher = lessоns.FindIndex(c => c.Group.Teacher == group.Teacher);
-            int indexGroup = lessоns.FindIndex(c => c.Group.Id == group.Id);
+            int indexGroup = lessоns.FindIndex(c => ListHealper.exists(c.Group.IdList, group.IdList));
             int indexAudiens = lessоns.FindIndex(c => c.Group.Audience.Id == audiens.Id);
-            if (lessоns.FindAll(c => c.Group.Id == group.Id).Count > 1)
+            if (lessоns.FindAll(c => ListHealper.exists(c.Group.IdList, group.IdList)).Count > 1)
             {
                 return false;
             }
@@ -746,7 +753,7 @@ namespace Timetable.Controller
 
         public void RemoveLesson(GroupGen group, AudienceDayHour audience)
         {
-            int index = lessоns.FindIndex(c => c.Group.Teacher == group.Teacher && c.Group.Id == group.Id && c.Group.Periodicity == group.Periodicity);
+            int index = lessоns.FindIndex(c => c.Group.Teacher == group.Teacher && ListHealper.exists(c.Group.IdList, group.IdList) && c.Group.Periodicity == group.Periodicity);
             if (index != -1)
                 lessоns.RemoveAt(index);
         }
@@ -791,7 +798,8 @@ namespace Timetable.Controller
 
     class GroupGen
     {
-        public int Id;
+        public int id;
+        public List<int> IdList = new List<int>();
         public int Teacher;
         public string NameTeacher;
         public int Discipline;
@@ -814,6 +822,22 @@ namespace Timetable.Controller
         public int periodicity;
     }
 
+    class ListHealper
+    {
+        public static bool exists(List<int> first, List<int> last)
+        {
 
-    
+            for (int i = 0; i < last.Count; i++)
+            {
+                int index = first.FindIndex(x => x == first[i]);
+                if (index > -1)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+*/
 }

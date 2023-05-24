@@ -1,11 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "R0i8F9sVtqpf/2dNUvR9MuI62E9qfugbUdtU60MgGOKA0nK/Rd1qHAgECp95sHMGLC6IOmDz7vQHPM612fgG9A==",
+  "dgSpecHash": "rcxlbnzz7XEhwiSotxM0U8Tp5eNQig3YZug4cO8KUXLORuZNmXvoAMKXS3GMYUyqX/Hndiep7Sp5+n5gfU7qnw==",
   "success": true,
   "projectFilePath": "D:\\GitHub\\Timetable\\Timetable\\Timetable.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\lopji\\.nuget\\packages\\docx\\2.4.0\\docx.2.4.0.nupkg.sha512",
     "C:\\Users\\lopji\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\6.0.0\\microsoft.extensions.logging.abstractions.6.0.0.nupkg.sha512",
+    "C:\\Users\\lopji\\.nuget\\packages\\microsoft.netcore.platforms\\5.0.0\\microsoft.netcore.platforms.5.0.0.nupkg.sha512",
+    "C:\\Users\\lopji\\.nuget\\packages\\microsoft.win32.systemevents\\5.0.0\\microsoft.win32.systemevents.5.0.0.nupkg.sha512",
     "C:\\Users\\lopji\\.nuget\\packages\\npgsql\\7.0.1\\npgsql.7.0.1.nupkg.sha512",
+    "C:\\Users\\lopji\\.nuget\\packages\\system.drawing.common\\5.0.2\\system.drawing.common.5.0.2.nupkg.sha512",
+    "C:\\Users\\lopji\\.nuget\\packages\\system.io.packaging\\4.5.0\\system.io.packaging.4.5.0.nupkg.sha512",
     "C:\\Users\\lopji\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
   ],
   "logs": []

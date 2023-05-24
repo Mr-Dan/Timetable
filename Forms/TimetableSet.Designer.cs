@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             panelTitle = new Panel();
+            radioBtnAuto = new RadioButton();
+            radioBtnManual = new RadioButton();
             btnSettings = new Button();
             label3 = new Label();
             button1 = new Button();
@@ -55,6 +57,7 @@
             panel2 = new Panel();
             btnClose = new Button();
             dataGridViewTable = new DataGridView();
+            btnClear = new Button();
             panelTitle.SuspendLayout();
             panelMain.SuspendLayout();
             GenSettings.SuspendLayout();
@@ -65,6 +68,9 @@
             // panelTitle
             // 
             panelTitle.BackColor = Color.FromArgb(168, 176, 181);
+            panelTitle.Controls.Add(btnClear);
+            panelTitle.Controls.Add(radioBtnAuto);
+            panelTitle.Controls.Add(radioBtnManual);
             panelTitle.Controls.Add(btnSettings);
             panelTitle.Controls.Add(label3);
             panelTitle.Controls.Add(button1);
@@ -78,6 +84,30 @@
             panelTitle.Name = "panelTitle";
             panelTitle.Size = new Size(1179, 94);
             panelTitle.TabIndex = 0;
+            // 
+            // radioBtnAuto
+            // 
+            radioBtnAuto.AutoSize = true;
+            radioBtnAuto.Location = new Point(740, 59);
+            radioBtnAuto.Name = "radioBtnAuto";
+            radioBtnAuto.Size = new Size(197, 24);
+            radioBtnAuto.TabIndex = 11;
+            radioBtnAuto.TabStop = true;
+            radioBtnAuto.Text = "Автоматический режим";
+            radioBtnAuto.UseVisualStyleBackColor = true;
+            radioBtnAuto.CheckedChanged += radioBtnAuto_CheckedChanged;
+            // 
+            // radioBtnManual
+            // 
+            radioBtnManual.AutoSize = true;
+            radioBtnManual.Location = new Point(607, 59);
+            radioBtnManual.Name = "radioBtnManual";
+            radioBtnManual.Size = new Size(132, 24);
+            radioBtnManual.TabIndex = 10;
+            radioBtnManual.TabStop = true;
+            radioBtnManual.Text = "Ручной режим";
+            radioBtnManual.UseVisualStyleBackColor = true;
+            radioBtnManual.CheckedChanged += radioBtnManual_CheckedChanged;
             // 
             // btnSettings
             // 
@@ -344,7 +374,19 @@
             dataGridViewTable.TabIndex = 1;
             dataGridViewTable.CellMouseDoubleClick += dataGridViewTable_CellMouseDoubleClick;
             dataGridViewTable.CellValueChanged += dataGridViewTable_CellValueChanged;
+            dataGridViewTable.SortCompare += dataGridViewTable_SortCompare;
+            dataGridViewTable.Sorted += dataGridViewTable_Sorted;
             dataGridViewTable.UserDeletedRow += dataGridViewTable_UserDeletedRow;
+            // 
+            // btnClear
+            // 
+            btnClear.Location = new Point(943, 57);
+            btnClear.Name = "btnClear";
+            btnClear.Size = new Size(128, 29);
+            btnClear.TabIndex = 12;
+            btnClear.Text = "Очистить";
+            btnClear.UseVisualStyleBackColor = true;
+            btnClear.Click += btnClear_Click;
             // 
             // TimetableSet
             // 
@@ -394,5 +436,8 @@
         private Button btnClose;
         private TextBox txtPopulation;
         private Label label9;
+        private RadioButton radioBtnAuto;
+        private RadioButton radioBtnManual;
+        private Button btnClear;
     }
 }
