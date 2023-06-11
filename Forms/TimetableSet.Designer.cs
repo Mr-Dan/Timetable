@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             panelTitle = new Panel();
+            btnClear = new Button();
             radioBtnAuto = new RadioButton();
             radioBtnManual = new RadioButton();
             btnSettings = new Button();
@@ -57,7 +58,6 @@
             panel2 = new Panel();
             btnClose = new Button();
             dataGridViewTable = new DataGridView();
-            btnClear = new Button();
             panelTitle.SuspendLayout();
             panelMain.SuspendLayout();
             GenSettings.SuspendLayout();
@@ -84,6 +84,16 @@
             panelTitle.Name = "panelTitle";
             panelTitle.Size = new Size(1179, 94);
             panelTitle.TabIndex = 0;
+            // 
+            // btnClear
+            // 
+            btnClear.Location = new Point(943, 57);
+            btnClear.Name = "btnClear";
+            btnClear.Size = new Size(128, 29);
+            btnClear.TabIndex = 12;
+            btnClear.Text = "Очистить";
+            btnClear.UseVisualStyleBackColor = true;
+            btnClear.Click += btnClear_Click;
             // 
             // radioBtnAuto
             // 
@@ -113,7 +123,7 @@
             // 
             btnSettings.Location = new Point(863, 17);
             btnSettings.Name = "btnSettings";
-            btnSettings.Size = new Size(192, 29);
+            btnSettings.Size = new Size(208, 29);
             btnSettings.TabIndex = 9;
             btnSettings.Text = "Настройки генерации";
             btnSettings.UseVisualStyleBackColor = true;
@@ -377,16 +387,6 @@
             dataGridViewTable.SortCompare += dataGridViewTable_SortCompare;
             dataGridViewTable.Sorted += dataGridViewTable_Sorted;
             dataGridViewTable.UserDeletedRow += dataGridViewTable_UserDeletedRow;
-            // 
-            // btnClear
-            // 
-            btnClear.Location = new Point(943, 57);
-            btnClear.Name = "btnClear";
-            btnClear.Size = new Size(128, 29);
-            btnClear.TabIndex = 12;
-            btnClear.Text = "Очистить";
-            btnClear.UseVisualStyleBackColor = true;
-            btnClear.Click += btnClear_Click;
             // 
             // TimetableSet
             // 

@@ -13,8 +13,8 @@ namespace Timetable
         private readonly string conn_param = "Server=127.0.0.1;Port=5432;User Id=postgres;Password=368;Database=timetabledb;";
 
 
-        private readonly Color activeBackColorButton = Color.FromArgb(239, 241, 242);
-        private readonly Color inactiveBackColorButton = Color.FromArgb(208, 218, 220);
+        private readonly Color activeBackColorButton = Color.FromArgb(208, 218, 220);
+        private readonly Color inactiveBackColorButton = Color.FromArgb(239, 241, 242);
 
         private readonly Color activeForeColorButton = Color.Black;
         private readonly Color inactiveForeColorButton = Color.Black;

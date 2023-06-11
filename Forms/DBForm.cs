@@ -75,6 +75,7 @@ namespace Timetable.Forms
         #region Update
         public void UpdateAudience(string cmdText, int countTitle) // Функция для обновления таблицы Аудиторий
         {
+            
             ClearDataGrid(); // очистка таблицы
 
             List<string> title = new List<string>(); // масив заголовков 
@@ -475,14 +476,32 @@ namespace Timetable.Forms
 
                     else if (nameTable == "faculty")
                     {
-                        UpdateFaculty("SELECT idfaculty, namefaculty,faculty.iddepartments," +
-            $" namedepartments FROM faculty LEFT JOIN departments USING(iddepartments) WHERE namefaculty ~*'{SearchTextBox.Text.Trim()}';", 4);
+
+                        if (!ConvertCustom.TryConvertToInt(SearchTextBox.Text.Trim()))
+                        {
+                            UpdateFaculty("SELECT idfaculty, namefaculty,faculty.iddepartments," +
+                $" namedepartments FROM faculty LEFT JOIN departments USING(iddepartments) WHERE namefaculty ~*'{SearchTextBox.Text.Trim()}';", 4);
+                        }
+                        else
+                        {
+                            UpdateFaculty("SELECT idfaculty, namefaculty,faculty.iddepartments," +
+              $" namedepartments FROM faculty LEFT JOIN departments USING(iddepartments) WHERE namefaculty ~*'{SearchTextBox.Text.Trim()}';", 4);
+                        }
                     }
                     else if (nameTable == "grouptable")
                     {
-                        UpdateGroupTable("SELECT idgroup, namegroup, formeducation, recruitmentyear, amount, " +
-                       "idfaculty, namefaculty, iddepartments, namedepartments,idcurriculum,namecurriculum,qualification" +
-                       $" FROM grouptable LEFT JOIN faculty USING(idfaculty) LEFT JOIN departments USING(iddepartments) LEFT JOIN curriculum USING(idcurriculum); WHERE namegroup ~*'{SearchTextBox.Text.Trim()}' OR namefaculty ~*'{SearchTextBox.Text.Trim()}';", 12);
+                        if (!ConvertCustom.TryConvertToInt(SearchTextBox.Text.Trim()))
+                        {
+                            UpdateGroupTable("SELECT idgroup, namegroup, formeducation, recruitmentyear, amount, " +
+                            "idfaculty, namefaculty, iddepartments, namedepartments,idcurriculum,namecurriculum,qualification" +
+                            $" FROM grouptable LEFT JOIN faculty USING(idfaculty) LEFT JOIN departments USING(iddepartments) LEFT JOIN curriculum USING(idcurriculum) WHERE namegroup ~*'{SearchTextBox.Text.Trim()}' OR namefaculty ~*'{SearchTextBox.Text.Trim()}';", 12);
+                        }
+                        else
+                        {
+                            UpdateGroupTable("SELECT idgroup, namegroup, formeducation, recruitmentyear, amount, " +
+                            "idfaculty, namefaculty, iddepartments, namedepartments,idcurriculum,namecurriculum,qualification" +
+                            $" FROM grouptable LEFT JOIN faculty USING(idfaculty) LEFT JOIN departments USING(iddepartments) LEFT JOIN curriculum USING(idcurriculum) WHERE idgroup ='{ConvertCustom.ConvertToInt(SearchTextBox.Text.Trim())}';", 12);
+                        }
                     }
                     else if (nameTable == "teacher")
                     {
@@ -1267,9 +1286,6 @@ namespace Timetable.Forms
                 try
                 {
                     Audience audience = Audience.GetAudience(GetValueDataGrid(e.RowIndex), Audience.OrderTitle); //Получаем изменения
-
-                   // if (!SqlAssistant.CheckInfo($"SELECT idaudience FROM audience WHERE nameaudience ='{audience.Name}';", conn)) // Если не нашли
-                   // {
                         int idFindNew = AudienceListUpdate.FindIndex(id => id.Id == audience.Id); // Если нашли в списке для обновленмй
                         if (idFindNew > -1)
                         {// То обновляем данные 
@@ -1290,12 +1306,7 @@ namespace Timetable.Forms
                         {// То добавляем данные 
                             AudienceListUpdate.Add(audience);
                             dataGridViewTable.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = SystemColors.InfoText;
-                        }
-                   /* }
-                    else
-                    {
-                        throw new Exception("Такая аудитория уже есть");
-                    }*/
+                        }              
                 }
                 catch (Exception ex)// Если произошла ошибка в введенных данных либо другая причина
                 { // То восстанавливаем данные 

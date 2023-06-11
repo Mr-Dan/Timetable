@@ -50,7 +50,7 @@
             // 
             // buttonConnect
             // 
-            buttonConnect.BackColor = Color.FromArgb(224, 227, 229);
+            buttonConnect.BackColor = Color.FromArgb(239, 241, 242);
             buttonConnect.Dock = DockStyle.Bottom;
             buttonConnect.FlatAppearance.BorderSize = 0;
             buttonConnect.FlatStyle = FlatStyle.Flat;
@@ -64,7 +64,7 @@
             // 
             // buttonDB
             // 
-            buttonDB.BackColor = Color.FromArgb(224, 227, 229);
+            buttonDB.BackColor = Color.FromArgb(239, 241, 242);
             buttonDB.Dock = DockStyle.Top;
             buttonDB.FlatAppearance.BorderSize = 0;
             buttonDB.FlatStyle = FlatStyle.Flat;
@@ -79,7 +79,7 @@
             // 
             // buttonTimetable
             // 
-            buttonTimetable.BackColor = Color.FromArgb(224, 227, 229);
+            buttonTimetable.BackColor = Color.FromArgb(239, 241, 242);
             buttonTimetable.Dock = DockStyle.Top;
             buttonTimetable.FlatAppearance.BorderSize = 0;
             buttonTimetable.FlatStyle = FlatStyle.Flat;
@@ -109,7 +109,6 @@
             Controls.Add(panelMain);
             Controls.Add(panelMenuLeft);
             Name = "Form1";
-            Text = "Form1";
             panelMenuLeft.ResumeLayout(false);
             ResumeLayout(false);
         }

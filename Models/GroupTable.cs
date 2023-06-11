@@ -215,7 +215,7 @@ namespace Timetable.Models
                 {
                     group.Curriculum.Name = objects[i].ToString();
                 }
-                else if (title[i] == "amount")
+                else if (title[i] == "qualification")
                 {
                     group.Curriculum.Qualification = objects[i].ToString();
                 }
@@ -272,7 +272,7 @@ namespace Timetable.Models
             {
                 return Curriculum.Name ;
             }
-            else if (title == "amount")
+            else if (title == "qualification")
             {
                 return Curriculum.Qualification;
             }

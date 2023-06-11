@@ -18,16 +18,18 @@ namespace Timetable.Controller
         public static Dictionary<int, int> GroupLessen;
         public static List<AudienceDayHour> AudienceList;
         public static List<GroupGen> GroupGenBusy;
+        public static List<string> TeacherList;
         // 1 = каждый  2 - числитель 3 - знаменатель переодичность
 
-        public Plan Main(List<GroupGen> groups, List<AudienceDayHour> audienceList, List<GroupGen> groupGenBusy)
+        public Plan Main(List<GroupGen> groups, List<AudienceDayHour> audienceList, List<GroupGen> groupGenBusy,List<string> teacherList )
         {
 
-            try
+           try
             {
             GroupLessen = new Dictionary<int, int>();
             AudienceList = audienceList;
             GroupGenBusy = groupGenBusy;
+            TeacherList = teacherList;
 
             // добавляем предметы не распределенных десциплин
             var list = new List<Lessоn>();
@@ -84,6 +86,12 @@ namespace Timetable.Controller
         public static int MoreFourLessonPenalty = 40;//штраф за 4 пары
         public static int LessonCountPenalty = 400;//штраф за большое колличесвто предметов
 
+        public static int test()
+        {
+            return 0;
+        }
+
+
         /// Штраф за окна
         public static Fitness Windows(Plan planOld)
         {
@@ -100,8 +108,10 @@ namespace Timetable.Controller
                         var teacher = lessоn.Group.Teacher;
                         var periodicity = lessоn.Group.Periodicity;
 
+                        #region group
                         List<Lessоn> list = windowsLessоns.FindAll(x => x.Group.Id == group.Id);
-                        if (list.Count > 0 && hour != 0)
+
+                        if(list.Count >= 1 && hour != 0)
                         {
                             List<Lessоn> lessоnsOnehour = plan.HourPlans[day, hour - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
                             if (lessоnsOnehour.Count == 0)
@@ -109,132 +119,227 @@ namespace Timetable.Controller
                                 fitness.Value += GroupWindowPenalty;
                                 fitness.Error.Add("Окно у группы");
                             }
-                            else if (list.Count > 1 && hour != 1)
+                            else if (lessоnsOnehour.Count >= 1)
                             {
-                                List<Lessоn> lessоnsTwohour = plan.HourPlans[day, hour - 2].lessоns.FindAll(x => x.Group.Id == group.Id);
-
-                                if (lessоnsTwohour.Count != 0 && lessоnsTwohour.Count != 2) // если час - 2 не две пары
+                                for (int k = hour; k >= 2; k--)
                                 {
-                                    if (lessоnsTwohour[0].Group.Periodicity != 1) // если час - 2 не постоянная пара
+                                    List<Lessоn> lessоnsTwohour = plan.HourPlans[day, k - 2].lessоns.FindAll(x => x.Group.Id == group.Id);
+
+                                    if (lessоnsTwohour.Count == 1)
                                     {
-                                        if (lessоnsOnehour[0].Group.Periodicity != 1) // если час - 1 не постоянная пара
+                                        // тут проверяем что третий блок равен 1 или первый блок равен третьему
+                                        if (lessоnsTwohour[0].Group.Periodicity == 1 || periodicity == lessоnsTwohour[0].Group.Periodicity)
                                         {
-                                            for (int i = 0; i < lessоnsOnehour.Count; i++)
-                                            {
-                                                // если час - 2 и час - 1 не равны
-                                                if (lessоnsOnehour[i].Group.Periodicity != lessоnsTwohour[0].Group.Periodicity)
-                                                {
-                                                    // тогда проверяем текущую и час - 1
-                                                    if (lessоnsOnehour[i].Group.Periodicity != periodicity)
+                                            lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
+                                            // проверяем второй блок
+                                            if (lessоnsOnehour.Count == 1)
+                                            {   // если второй блок не равен 1
+                                                if (lessоnsOnehour[0].Group.Periodicity != 1)
+                                                {   // тогда сравниваем первый и второй блок
+                                                    if (lessоnsOnehour[0].Group.Periodicity != periodicity)
                                                     {
                                                         fitness.Value += GroupWindowPenalty;
                                                         fitness.Error.Add("Окно у группы");
                                                     }
                                                 }
                                             }
-
+                                            else
+                                            {
+                                                //если две то пропускаем (числитель/знаменатель)
+                                            }
                                         }
-                                    }// тогда час -2 стоит постоянная пара
+                                        else//если третий блок не равен 1 и не равен первому
+                                        {
+                                            lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
+
+                                            if (lessоnsOnehour.Count == 1)
+                                            {
+                                                // если второй блок не равен 1
+                                                if (lessоnsOnehour[0].Group.Periodicity != 1)
+                                                { // если второй блок и третий не равен окно
+                                                    if (lessоnsOnehour[0].Group.Periodicity != periodicity)
+                                                    {
+                                                         k--;
+                                                          if (k >= 2)// если есть
+                                                          {
+                                                              fitness.Value += GroupWindowPenalty;
+                                                              fitness.Error.Add("Окно у группы");
+                                                          }
+                                                       
+                                                    }
+                                                    // если равен, то проверяем четвертый блок, если он есть
+                                                    else
+                                                    {
+                                                        k--;
+                                                        if (k >= 2)// если есть
+                                                        {
+                                                            lessоnsTwohour = plan.HourPlans[day, k - 2].lessоns.FindAll(x => x.Group.Id == group.Id);
+                                                            if (lessоnsTwohour.Count == 1)
+                                                            {
+                                                                if (lessоnsTwohour[0].Group.Periodicity != 1)
+                                                                {
+                                                                    if (lessоnsOnehour[0].Group.Periodicity != lessоnsTwohour[0].Group.Periodicity)
+                                                                    {
+                                                                        fitness.Value += GroupWindowPenalty;
+                                                                        fitness.Error.Add("Окно у группы");
+                                                                    }
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                               
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                //если две то пропускаем (числитель/знаменатель)
+                                            }
+                                        }
+                                    }
                                     else
                                     {
-                                        if (lessоnsOnehour[0].Group.Periodicity != 1) // если час - 1 не постоянная пара
-                                        {
-                                            for (int i = 0; i < lessоnsOnehour.Count; i++)
-                                            {
-                                                // если час - 2 и час - 1 не равны
-
-                                                // тогда проверяем текущую и час - 1
-                                                if (lessоnsOnehour[i].Group.Periodicity != periodicity)
+                                       
+                                        lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
+                                        // проверяем второй блок
+                                        if (lessоnsOnehour.Count == 1)
+                                        {   // если второй блок не равен 1
+                                            if (lessоnsOnehour[0].Group.Periodicity != 1)
+                                            {   // тогда сравниваем первый и второй блок
+                                                if (lessоnsOnehour[0].Group.Periodicity != periodicity)
                                                 {
                                                     fitness.Value += GroupWindowPenalty;
                                                     fitness.Error.Add("Окно у группы");
                                                 }
                                             }
                                         }
-                                    }
-                                }
-                                else
-                                {
-                                    if (lessоnsOnehour.Count != 2)
-                                    {
-                                        if (lessоnsOnehour[0].Group.Periodicity != periodicity)
+                                        else
                                         {
-                                            fitness.Value += GroupWindowPenalty;
-                                            fitness.Error.Add("Окно у группы");
+                                            //если две то пропускаем (числитель/знаменатель)
                                         }
                                     }
                                 }
                             }
+                            
                         }
+                        #endregion
+
+
+                        #region teacher
 
                         list = windowsLessоns.FindAll(x => x.Group.Teacher == teacher);
-                        if (list.Count > 0 && hour != 0)
+
+                        if (list.Count >= 1 && hour != 0)
                         {
-                            List<Lessоn> lessоnsOnehour = plan.HourPlans[day, hour - 1].lessоns.FindAll(x => x.Group.Teacher == group.Teacher);
+                            List<Lessоn> lessоnsOnehour = plan.HourPlans[day, hour - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
                             if (lessоnsOnehour.Count == 0)
                             {
                                 fitness.Value += TeacherWindowPenalty;
-                                fitness.Error.Add("Окно у Преподователя");
+                                fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
                             }
-                            else if (list.Count > 1 && hour != 1)
+                            else if (lessоnsOnehour.Count >= 1)
                             {
-                                List<Lessоn> lessоnsTwohour = plan.HourPlans[day, hour - 2].lessоns.FindAll(x => x.Group.Teacher == group.Teacher);
-
-                                if (lessоnsTwohour.Count != 0 && lessоnsTwohour.Count != 2) // если час - 2 не две пары
+                                for (int k = hour; k >= 2; k--)
                                 {
-                                    if (lessоnsTwohour[0].Group.Periodicity != 1) // если час - 2 не постоянная пара
+                                    List<Lessоn> lessоnsTwohour = plan.HourPlans[day, k - 2].lessоns.FindAll(x => x.Group.Teacher == teacher);
+
+                                    if (lessоnsTwohour.Count == 1)
                                     {
-                                        if (lessоnsOnehour[0].Group.Periodicity != 1) // если час - 1 не постоянная пара
+                                        // тут проверяем что третий блок равен 1 или первый блок равен третьему
+                                        if (lessоnsTwohour[0].Group.Periodicity == 1 || periodicity == lessоnsTwohour[0].Group.Periodicity)
                                         {
-                                            for (int i = 0; i < lessоnsOnehour.Count; i++)
-                                            {
-                                                // если час - 2 и час - 1 не равны
-                                                if (lessоnsOnehour[i].Group.Periodicity != lessоnsTwohour[0].Group.Periodicity)
-                                                {
-                                                    // тогда проверяем текущую и час - 1
-                                                    if (lessоnsOnehour[i].Group.Periodicity != periodicity)
+                                            lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
+                                            // проверяем второй блок
+                                            if (lessоnsOnehour.Count == 1)
+                                            {   // если второй блок не равен 1
+                                                if (lessоnsOnehour[0].Group.Periodicity != 1)
+                                                {   // тогда сравниваем первый и второй блок
+                                                    if (lessоnsOnehour[0].Group.Periodicity != periodicity)
                                                     {
                                                         fitness.Value += TeacherWindowPenalty;
-                                                        fitness.Error.Add("Окно у Преподователя");
+                                                        fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
                                                     }
                                                 }
                                             }
-
-                                        }
-                                    }// тогда час -2 стоит постоянная пара
-                                    else
-                                    {
-                                        if (lessоnsOnehour[0].Group.Periodicity != 1) // если час - 1 не постоянная пара
-                                        {
-                                            for (int i = 0; i < lessоnsOnehour.Count; i++)
+                                            else
                                             {
-                                                // если час - 2 и час - 1 не равны
+                                                //если две то норм
+                                            }
+                                        }
+                                        else//если третий блок не равен 1 и не равен первому
+                                        {
+                                            lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
 
-                                                // тогда проверяем текущую и час - 1
-                                                if (lessоnsOnehour[i].Group.Periodicity != periodicity)
-                                                {
-                                                    fitness.Value += TeacherWindowPenalty;
-                                                    fitness.Error.Add("Окно у Преподователя");
+                                            if (lessоnsOnehour.Count == 1)
+                                            {
+                                                // если второй блок не равен 1
+                                                if (lessоnsOnehour[0].Group.Periodicity != 1)
+                                                { // если второй блок и третий не равен окно
+                                                    if (lessоnsOnehour[0].Group.Periodicity != lessоnsTwohour[0].Group.Periodicity)
+                                                    {
+                                                        fitness.Value += TeacherWindowPenalty;
+                                                        fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
+                                                    }
+                                                    // если равен, то проверяем четвертый блок, если он есть
+                                                    else
+                                                    {
+                                                        k--;
+                                                        if (k >= 2)// если есть
+                                                        {
+                                                            lessоnsTwohour = plan.HourPlans[day, k - 2].lessоns.FindAll(x => x.Group.Teacher == teacher);
+                                                            if (lessоnsOnehour.Count == 1 && lessоnsTwohour.Count == 1)
+                                                            {
+                                                                if (lessоnsOnehour[0].Group.Periodicity != lessоnsTwohour[0].Group.Periodicity)
+                                                                {
+                                                                    fitness.Value += TeacherWindowPenalty;
+                                                                    fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                fitness.Value += TeacherWindowPenalty;
+                                                                fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
+                                                            }
+                                                        }
+                                                    }
                                                 }
+                                            }
+                                            else
+                                            {
+                                                //если две то норм
                                             }
                                         }
                                     }
-                                }
-                                else
-                                {
-                                    if (lessоnsOnehour.Count != 2)
+                                    else
                                     {
-                                        if (lessоnsOnehour[0].Group.Periodicity != periodicity)
+                                        lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
+                                        // проверяем второй блок
+                                        if (lessоnsOnehour.Count == 1)
+                                        {   // если второй блок не равен 1
+                                            if (lessоnsOnehour[0].Group.Periodicity != 1)
+                                            {   // тогда сравниваем первый и второй блок
+                                                if (lessоnsOnehour[0].Group.Periodicity != periodicity)
+                                                {
+                                                    fitness.Value += TeacherWindowPenalty;
+                                                    fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
+                                                }
+                                            }
+                                        }
+                                        else
                                         {
-                                            fitness.Value += TeacherWindowPenalty;
-                                            fitness.Error.Add("Окно у Преподователя");
+                                            //если две то норм
                                         }
                                     }
                                 }
                             }
-                        }
 
+                        }
+                        #endregion
+                        if (group.Id == -1)
                         windowsLessоns.Add(new Lessоn(new GroupGen() { Id = group.Id }, new AudienceDayHour()));
+                        if(GenAlgoritm.TeacherList.FindIndex(x => x == teacher.ToString())>-1)
                         windowsLessоns.Add(new Lessоn(new GroupGen() { Teacher = group.Teacher }, new AudienceDayHour()));
                     }
                 }
@@ -255,14 +360,16 @@ namespace Timetable.Controller
                 {
                     foreach (var pair in plan.HourPlans[day, hour].lessоns)
                     {
-                        if (!unic.ContainsKey(pair.Group.Id))
+                        if (pair.Group.Id == -1)
                         {
-                            unic.Add(pair.Group.Id, new Periodicity());
+                            if (!unic.ContainsKey(pair.Group.Id))
+                            {
+                                unic.Add(pair.Group.Id, new Periodicity());
+                            }
+                            if (pair.Group.Periodicity == 1) unic[pair.Group.Id].k++;
+                            else if (pair.Group.Periodicity == 2) unic[pair.Group.Id].ch++;
+                            else if (pair.Group.Periodicity == 3) unic[pair.Group.Id].z++;
                         }
-                        if (pair.Group.Periodicity == 1) unic[pair.Group.Id].k++;
-                        else if (pair.Group.Periodicity == 2) unic[pair.Group.Id].ch++;
-                        else if (pair.Group.Periodicity == 3) unic[pair.Group.Id].z++;
-
                     }
                 }
 
@@ -308,21 +415,27 @@ namespace Timetable.Controller
                 {
                     foreach (var pair in plan.HourPlans[day, hour].lessоns)
                     {
-                        if (!groupUnic.ContainsKey(pair.Group.Id))
+                        if (pair.Group.Id == -1)
                         {
-                            groupUnic.Add(pair.Group.Id, new Periodicity());
+                            if (!groupUnic.ContainsKey(pair.Group.Id))
+                            {
+                                groupUnic.Add(pair.Group.Id, new Periodicity());
+                            }
+                            if (pair.Group.Periodicity == 1) groupUnic[pair.Group.Id].k++;
+                            else if (pair.Group.Periodicity == 2) groupUnic[pair.Group.Id].ch++;
+                            else if (pair.Group.Periodicity == 3) groupUnic[pair.Group.Id].z++;
                         }
-                        if (pair.Group.Periodicity == 1) groupUnic[pair.Group.Id].k++;
-                        else if (pair.Group.Periodicity == 2) groupUnic[pair.Group.Id].ch++;
-                        else if (pair.Group.Periodicity == 3) groupUnic[pair.Group.Id].z++;
 
-                        if (!teacherUnic.ContainsKey(pair.Group.Teacher))
+                        if (GenAlgoritm.TeacherList.FindIndex(x => x == pair.Group.Teacher.ToString()) > -1)
                         {
-                            teacherUnic.Add(pair.Group.Teacher, new Periodicity());
+                            if (!teacherUnic.ContainsKey(pair.Group.Teacher))
+                            {
+                                teacherUnic.Add(pair.Group.Teacher, new Periodicity());
+                            }
+                            if (pair.Group.Periodicity == 1) teacherUnic[pair.Group.Teacher].k++;
+                            else if (pair.Group.Periodicity == 2) teacherUnic[pair.Group.Teacher].ch++;
+                            else if (pair.Group.Periodicity == 3) teacherUnic[pair.Group.Teacher].z++;
                         }
-                        if (pair.Group.Periodicity == 1) teacherUnic[pair.Group.Teacher].k++;
-                        else if (pair.Group.Periodicity == 2) teacherUnic[pair.Group.Teacher].ch++;
-                        else if (pair.Group.Periodicity == 3) teacherUnic[pair.Group.Teacher].z++;
                     }
                 }
 
@@ -393,7 +506,7 @@ namespace Timetable.Controller
                     List<GroupGen> group = GenAlgoritm.GroupGenBusy.FindAll(x => x.Audience.day == day && x.Audience.hour == hour);
                     for (int i = 0; i < group.Count; i++)
                     {
-                        if(group[i].Id == -1)
+                       // if(group[i].Id == -1)
                         plan.HourPlans[day, hour].AddLesson(group[i], group[i].Audience);
                     }
                 }
