@@ -305,12 +305,12 @@ namespace Timetable.Forms
             if (txtGroup.Text.Trim() != "")
             {
                 timetablesListUpdate.Clear();
-                FitnessFunctions.GroupWindowPenalty = ConvertCustom.ConvertToInt(txtGroupWindow.Text);
-                FitnessFunctions.TeacherWindowPenalty = ConvertCustom.ConvertToInt(txtTeacherWindow.Text);
-                FitnessFunctions.OneLessonPenalty = ConvertCustom.ConvertToInt(txtOneLesson.Text);
-                FitnessFunctions.MoreFourLessonPenalty = ConvertCustom.ConvertToInt(txtMoreFourLesson.Text);
+                PenaltyFunctions.GroupWindowPenalty = ConvertCustom.ConvertToInt(txtGroupWindow.Text);
+                PenaltyFunctions.TeacherWindowPenalty = ConvertCustom.ConvertToInt(txtTeacherWindow.Text);
+                PenaltyFunctions.OneLessonPenalty = ConvertCustom.ConvertToInt(txtOneLesson.Text);
+                PenaltyFunctions.MoreFourLessonPenalty = ConvertCustom.ConvertToInt(txtMoreFourLesson.Text);
 
-                Gen.MaxIterations = ConvertCustom.ConvertToInt(txtIterations.Text);
+                Gen.iter = ConvertCustom.ConvertToInt(txtIterations.Text);
                 Gen.PopulationCount = ConvertCustom.ConvertToInt(txtPopulation.Text);
 
                 GenAlgoritm genAlgoritm = new GenAlgoritm();
@@ -369,16 +369,16 @@ namespace Timetable.Forms
                            }
                        }*/
 
-                    Plan plan = genAlgoritm.Main(groups, audienceList, GroupGenBusy, idteachres);
+                    TimetablePlan plan = genAlgoritm.Main(groups, audienceList, GroupGenBusy, idteachres);
                     if (plan != null)
                     {
                         TimeTableSet(plan);
                         string error = "";
-                        for (int i = 0; i < plan.FitnessValue.Error.Count; i++)
+                        for (int i = 0; i < plan.PenaltyValue.Error.Count; i++)
                         {
-                            error += plan.FitnessValue.Error[i] + "\n";
+                            error += plan.PenaltyValue.Error[i] + "\n";
                         }
-                        MessageBox.Show("Сумма ошибок=" + plan.FitnessValue.Value + "\n" + error);
+                        MessageBox.Show("Сумма ошибок=" + plan.PenaltyValue.Value + "\n" + error);
                     }
 
                 }
@@ -389,13 +389,13 @@ namespace Timetable.Forms
                 MessageBox.Show("Выберете группу");
             }
         }
-        private void TimeTableSet(Plan plan)
+        private void TimeTableSet(TimetablePlan plan)
         {
-            for (int day = 0; day < Plan.DaysPerWeek; day++)
+            for (int day = 0; day < TimetablePlan.DaysPerWeek; day++)
             {
-                for (int hour = 0; hour < Plan.HoursPerDay; hour++)
+                for (int hour = 0; hour < TimetablePlan.HoursPerDay; hour++)
                 {
-                    foreach (var pair in plan.HourPlans[day, hour].lessоns)
+                    foreach (var pair in plan.HourTimetablePlan[day, hour].lessоns)
                     {
                         int id = dataGridViewTable.Columns["idtimetable"].Index;
 

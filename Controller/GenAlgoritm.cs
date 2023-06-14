@@ -21,7 +21,7 @@ namespace Timetable.Controller
         public static List<string> TeacherList;
         // 1 = каждый  2 - числитель 3 - знаменатель переодичность
 
-        public Plan Main(List<GroupGen> groups, List<AudienceDayHour> audienceList, List<GroupGen> groupGenBusy,List<string> teacherList )
+        public TimetablePlan Main(List<GroupGen> groups, List<AudienceDayHour> audienceList, List<GroupGen> groupGenBusy,List<string> teacherList )
         {
 
            try
@@ -57,13 +57,13 @@ namespace Timetable.Controller
 
             var solver = new Gen();
 
-            Plan.DaysPerWeek = 6;// Дни недели
-            Plan.HoursPerDay = 6; // Время пар
+                TimetablePlan.DaysPerWeek = 6;// Дни недели
+                TimetablePlan.HoursPerDay = 6; // Время пар
 
-            solver.FitnessFunctions.Add(FitnessFunctions.Windows);//будем штрафовать за окна
-            solver.FitnessFunctions.Add(FitnessFunctions.OneLesson);//будем штрафовать за одну пару
-            solver.FitnessFunctions.Add(FitnessFunctions.MoreFourLesson);//будем штрафовать за больше 4 пары
-            solver.FitnessFunctions.Add(FitnessFunctions.LessonCount);//большое количество предметов
+            solver.FitnessFunctions.Add(PenaltyFunctions.Windows);//будем штрафовать за окна
+            solver.FitnessFunctions.Add(PenaltyFunctions.OneLesson);//будем штрафовать за одну пару
+            solver.FitnessFunctions.Add(PenaltyFunctions.MoreFourLesson);//будем штрафовать за больше 4 пары
+            solver.FitnessFunctions.Add(PenaltyFunctions.LessonCount);//большое количество предметов
 
             var res = solver.Solve(list);//находим лучший план
 
@@ -78,10 +78,10 @@ namespace Timetable.Controller
     }
 
     /// Фитнесс функции
-    static class FitnessFunctions
+    static class PenaltyFunctions
     {
-        public static int GroupWindowPenalty = 10;//штраф за окно у группы
-        public static int TeacherWindowPenalty = 7;//штраф за окно у преподавателя
+        public static int GroupWindowPenalty = 12;//штраф за окно у группы
+        public static int TeacherWindowPenalty = 8;//штраф за окно у преподавателя
         public static int OneLessonPenalty = 40;//штраф одну пару
         public static int MoreFourLessonPenalty = 40;//штраф за 4 пары
         public static int LessonCountPenalty = 400;//штраф за большое колличесвто предметов
@@ -93,16 +93,16 @@ namespace Timetable.Controller
 
 
         /// Штраф за окна
-        public static Fitness Windows(Plan planOld)
+        public static Penalty Windows(TimetablePlan planOld)
         {
-            Fitness fitness = new Fitness();
-            Plan plan = ComboPlan(planOld);
-            for (int day = 0; day < Plan.DaysPerWeek; day++)
+            Penalty penalty = new Penalty();
+            TimetablePlan plan = ComboPlan(planOld);
+            for (int day = 0; day < TimetablePlan.DaysPerWeek; day++)
             {
                 List<Lessоn> windowsLessоns = new List<Lessоn>();
-                for (int hour = 0; hour < Plan.HoursPerDay; hour++)
+                for (int hour = 0; hour < TimetablePlan.HoursPerDay; hour++)
                 {
-                    foreach (Lessоn lessоn in plan.HourPlans[day, hour].lessоns)
+                    foreach (Lessоn lessоn in plan.HourTimetablePlan[day, hour].lessоns)
                     {
                         var group = lessоn.Group;
                         var teacher = lessоn.Group.Teacher;
@@ -113,24 +113,24 @@ namespace Timetable.Controller
 
                         if(list.Count >= 1 && hour != 0)
                         {
-                            List<Lessоn> lessоnsOnehour = plan.HourPlans[day, hour - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
+                            List<Lessоn> lessоnsOnehour = plan.HourTimetablePlan[day, hour - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
                             if (lessоnsOnehour.Count == 0)
                             {
-                                fitness.Value += GroupWindowPenalty;
-                                fitness.Error.Add("Окно у группы");
+                                penalty.Value += GroupWindowPenalty;
+                                penalty.Error.Add("Окно у группы");
                             }
                             else if (lessоnsOnehour.Count >= 1)
                             {
                                 for (int k = hour; k >= 2; k--)
                                 {
-                                    List<Lessоn> lessоnsTwohour = plan.HourPlans[day, k - 2].lessоns.FindAll(x => x.Group.Id == group.Id);
+                                    List<Lessоn> lessоnsTwohour = plan.HourTimetablePlan[day, k - 2].lessоns.FindAll(x => x.Group.Id == group.Id);
 
                                     if (lessоnsTwohour.Count == 1)
                                     {
                                         // тут проверяем что третий блок равен 1 или первый блок равен третьему
                                         if (lessоnsTwohour[0].Group.Periodicity == 1 || periodicity == lessоnsTwohour[0].Group.Periodicity)
                                         {
-                                            lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
+                                            lessоnsOnehour = plan.HourTimetablePlan[day, k - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
                                             // проверяем второй блок
                                             if (lessоnsOnehour.Count == 1)
                                             {   // если второй блок не равен 1
@@ -138,8 +138,8 @@ namespace Timetable.Controller
                                                 {   // тогда сравниваем первый и второй блок
                                                     if (lessоnsOnehour[0].Group.Periodicity != periodicity)
                                                     {
-                                                        fitness.Value += GroupWindowPenalty;
-                                                        fitness.Error.Add("Окно у группы");
+                                                        penalty.Value += GroupWindowPenalty;
+                                                        penalty.Error.Add("Окно у группы");
                                                     }
                                                 }
                                             }
@@ -150,7 +150,7 @@ namespace Timetable.Controller
                                         }
                                         else//если третий блок не равен 1 и не равен первому
                                         {
-                                            lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
+                                            lessоnsOnehour = plan.HourTimetablePlan[day, k - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
 
                                             if (lessоnsOnehour.Count == 1)
                                             {
@@ -162,8 +162,8 @@ namespace Timetable.Controller
                                                          k--;
                                                           if (k >= 2)// если есть
                                                           {
-                                                              fitness.Value += GroupWindowPenalty;
-                                                              fitness.Error.Add("Окно у группы");
+                                                              penalty.Value += GroupWindowPenalty;
+                                                              penalty.Error.Add("Окно у группы");
                                                           }
                                                        
                                                     }
@@ -173,15 +173,15 @@ namespace Timetable.Controller
                                                         k--;
                                                         if (k >= 2)// если есть
                                                         {
-                                                            lessоnsTwohour = plan.HourPlans[day, k - 2].lessоns.FindAll(x => x.Group.Id == group.Id);
+                                                            lessоnsTwohour = plan.HourTimetablePlan[day, k - 2].lessоns.FindAll(x => x.Group.Id == group.Id);
                                                             if (lessоnsTwohour.Count == 1)
                                                             {
                                                                 if (lessоnsTwohour[0].Group.Periodicity != 1)
                                                                 {
                                                                     if (lessоnsOnehour[0].Group.Periodicity != lessоnsTwohour[0].Group.Periodicity)
                                                                     {
-                                                                        fitness.Value += GroupWindowPenalty;
-                                                                        fitness.Error.Add("Окно у группы");
+                                                                        penalty.Value += GroupWindowPenalty;
+                                                                        penalty.Error.Add("Окно у группы");
                                                                     }
                                                                 }
                                                             }
@@ -202,7 +202,7 @@ namespace Timetable.Controller
                                     else
                                     {
                                        
-                                        lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
+                                        lessоnsOnehour = plan.HourTimetablePlan[day, k - 1].lessоns.FindAll(x => x.Group.Id == group.Id);
                                         // проверяем второй блок
                                         if (lessоnsOnehour.Count == 1)
                                         {   // если второй блок не равен 1
@@ -210,8 +210,8 @@ namespace Timetable.Controller
                                             {   // тогда сравниваем первый и второй блок
                                                 if (lessоnsOnehour[0].Group.Periodicity != periodicity)
                                                 {
-                                                    fitness.Value += GroupWindowPenalty;
-                                                    fitness.Error.Add("Окно у группы");
+                                                    penalty.Value += GroupWindowPenalty;
+                                                    penalty.Error.Add("Окно у группы");
                                                 }
                                             }
                                         }
@@ -233,24 +233,24 @@ namespace Timetable.Controller
 
                         if (list.Count >= 1 && hour != 0)
                         {
-                            List<Lessоn> lessоnsOnehour = plan.HourPlans[day, hour - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
+                            List<Lessоn> lessоnsOnehour = plan.HourTimetablePlan[day, hour - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
                             if (lessоnsOnehour.Count == 0)
                             {
-                                fitness.Value += TeacherWindowPenalty;
-                                fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
+                                penalty.Value += TeacherWindowPenalty;
+                                penalty.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
                             }
                             else if (lessоnsOnehour.Count >= 1)
                             {
                                 for (int k = hour; k >= 2; k--)
                                 {
-                                    List<Lessоn> lessоnsTwohour = plan.HourPlans[day, k - 2].lessоns.FindAll(x => x.Group.Teacher == teacher);
+                                    List<Lessоn> lessоnsTwohour = plan.HourTimetablePlan[day, k - 2].lessоns.FindAll(x => x.Group.Teacher == teacher);
 
                                     if (lessоnsTwohour.Count == 1)
                                     {
                                         // тут проверяем что третий блок равен 1 или первый блок равен третьему
                                         if (lessоnsTwohour[0].Group.Periodicity == 1 || periodicity == lessоnsTwohour[0].Group.Periodicity)
                                         {
-                                            lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
+                                            lessоnsOnehour = plan.HourTimetablePlan[day, k - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
                                             // проверяем второй блок
                                             if (lessоnsOnehour.Count == 1)
                                             {   // если второй блок не равен 1
@@ -258,8 +258,8 @@ namespace Timetable.Controller
                                                 {   // тогда сравниваем первый и второй блок
                                                     if (lessоnsOnehour[0].Group.Periodicity != periodicity)
                                                     {
-                                                        fitness.Value += TeacherWindowPenalty;
-                                                        fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
+                                                        penalty.Value += TeacherWindowPenalty;
+                                                        penalty.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
                                                     }
                                                 }
                                             }
@@ -270,7 +270,7 @@ namespace Timetable.Controller
                                         }
                                         else//если третий блок не равен 1 и не равен первому
                                         {
-                                            lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
+                                            lessоnsOnehour = plan.HourTimetablePlan[day, k - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
 
                                             if (lessоnsOnehour.Count == 1)
                                             {
@@ -279,8 +279,8 @@ namespace Timetable.Controller
                                                 { // если второй блок и третий не равен окно
                                                     if (lessоnsOnehour[0].Group.Periodicity != lessоnsTwohour[0].Group.Periodicity)
                                                     {
-                                                        fitness.Value += TeacherWindowPenalty;
-                                                        fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
+                                                        penalty.Value += TeacherWindowPenalty;
+                                                        penalty.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
                                                     }
                                                     // если равен, то проверяем четвертый блок, если он есть
                                                     else
@@ -288,19 +288,19 @@ namespace Timetable.Controller
                                                         k--;
                                                         if (k >= 2)// если есть
                                                         {
-                                                            lessоnsTwohour = plan.HourPlans[day, k - 2].lessоns.FindAll(x => x.Group.Teacher == teacher);
+                                                            lessоnsTwohour = plan.HourTimetablePlan[day, k - 2].lessоns.FindAll(x => x.Group.Teacher == teacher);
                                                             if (lessоnsOnehour.Count == 1 && lessоnsTwohour.Count == 1)
                                                             {
                                                                 if (lessоnsOnehour[0].Group.Periodicity != lessоnsTwohour[0].Group.Periodicity)
                                                                 {
-                                                                    fitness.Value += TeacherWindowPenalty;
-                                                                    fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
+                                                                    penalty.Value += TeacherWindowPenalty;
+                                                                    penalty.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
                                                                 }
                                                             }
                                                             else
                                                             {
-                                                                fitness.Value += TeacherWindowPenalty;
-                                                                fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
+                                                                penalty.Value += TeacherWindowPenalty;
+                                                                penalty.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
                                                             }
                                                         }
                                                     }
@@ -314,7 +314,7 @@ namespace Timetable.Controller
                                     }
                                     else
                                     {
-                                        lessоnsOnehour = plan.HourPlans[day, k - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
+                                        lessоnsOnehour = plan.HourTimetablePlan[day, k - 1].lessоns.FindAll(x => x.Group.Teacher == teacher);
                                         // проверяем второй блок
                                         if (lessоnsOnehour.Count == 1)
                                         {   // если второй блок не равен 1
@@ -322,8 +322,8 @@ namespace Timetable.Controller
                                             {   // тогда сравниваем первый и второй блок
                                                 if (lessоnsOnehour[0].Group.Periodicity != periodicity)
                                                 {
-                                                    fitness.Value += TeacherWindowPenalty;
-                                                    fitness.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
+                                                    penalty.Value += TeacherWindowPenalty;
+                                                    penalty.Error.Add($"Окно у преподователя {group.Teacher} у группы в день {day} в час {hour}");
                                                 }
                                             }
                                         }
@@ -345,20 +345,20 @@ namespace Timetable.Controller
                 }
             }
             DeletePlan(planOld);
-            return fitness;
+            return penalty;
         }
 
-        public static Fitness OneLesson(Plan planOld)
+        public static Penalty OneLesson(TimetablePlan planOld)
         {
-            Fitness fitness = new Fitness();
-            Plan plan = ComboPlan(planOld);
-            for (byte day = 0; day < Plan.DaysPerWeek; day++)
+            Penalty penalty = new Penalty();
+            TimetablePlan plan = ComboPlan(planOld);
+            for (int day = 0; day < TimetablePlan.DaysPerWeek; day++)
             {
                 Dictionary<int, Periodicity> unic = new Dictionary<int, Periodicity>();
 
-                for (byte hour = 0; hour < Plan.HoursPerDay; hour++)
+                for (int hour = 0; hour < TimetablePlan.HoursPerDay; hour++)
                 {
-                    foreach (var pair in plan.HourPlans[day, hour].lessоns)
+                    foreach (Lessоn pair in plan.HourTimetablePlan[day, hour].lessоns)
                     {
                         if (pair.Group.Id == -1)
                         {
@@ -379,8 +379,8 @@ namespace Timetable.Controller
                     {
                         if (pair.Value.ch == 0 || pair.Value.z == 0)
                         {
-                            fitness.Value += OneLessonPenalty;
-                            fitness.Error.Add($"Одна пара у группы {day} {pair} {pair.Value.k} {pair.Value.ch}  {pair.Value.z}");
+                            penalty.Value += OneLessonPenalty;
+                            penalty.Error.Add($"Одна пара у группы {day} {pair} {pair.Value.k} {pair.Value.ch}  {pair.Value.z}");
                         }
                     
                     }
@@ -388,32 +388,32 @@ namespace Timetable.Controller
                     {
                         if (pair.Value.ch < 2 && pair.Value.ch != 0)
                         {
-                            fitness.Value += OneLessonPenalty;
-                            fitness.Error.Add($"Одна пара у группы {day} {pair} {pair.Value} {pair.Value.k} {pair.Value.ch}  {pair.Value.z}");
+                            penalty.Value += OneLessonPenalty;
+                            penalty.Error.Add($"Одна пара у группы {day} {pair} {pair.Value} {pair.Value.k} {pair.Value.ch}  {pair.Value.z}");
                         }
                         else if (pair.Value.z < 2 && pair.Value.z != 0)
                         {
-                            fitness.Value += OneLessonPenalty;
-                            fitness.Error.Add($"Одна пара у группы {day} {pair} {pair.Value}  {pair.Value.k} {pair.Value.ch}  {pair.Value.z}");
+                            penalty.Value += OneLessonPenalty;
+                            penalty.Error.Add($"Одна пара у группы {day} {pair} {pair.Value}  {pair.Value.k} {pair.Value.ch}  {pair.Value.z}");
                         }
                     }
                 }
             }
             DeletePlan(planOld);
-            return fitness;
+            return penalty;
         }
 
-        public static Fitness MoreFourLesson(Plan planOld)
+        public static Penalty MoreFourLesson(TimetablePlan planOld)
         {
-            Fitness fitness = new Fitness();
-            Plan plan = ComboPlan(planOld);
-            for (byte day = 0; day < Plan.DaysPerWeek; day++)
+            Penalty penalty = new Penalty();
+            TimetablePlan plan = ComboPlan(planOld);
+            for (byte day = 0; day < TimetablePlan.DaysPerWeek; day++)
             {
                 Dictionary<int, Periodicity> groupUnic = new Dictionary<int, Periodicity>();
                 Dictionary<int, Periodicity> teacherUnic = new Dictionary<int, Periodicity>();
-                for (byte hour = 0; hour < Plan.HoursPerDay; hour++)
+                for (byte hour = 0; hour < TimetablePlan.HoursPerDay; hour++)
                 {
-                    foreach (var pair in plan.HourPlans[day, hour].lessоns)
+                    foreach (var pair in plan.HourTimetablePlan[day, hour].lessоns)
                     {
                         if (pair.Group.Id == -1)
                         {
@@ -443,34 +443,34 @@ namespace Timetable.Controller
                 {
                     if (pair.Value.k + pair.Value.ch > 4 || pair.Value.k + pair.Value.z > 4)
                     {
-                        fitness.Value += MoreFourLessonPenalty;
-                        fitness.Error.Add("Больше 4 пары у группы");
+                        penalty.Value += MoreFourLessonPenalty;
+                        penalty.Error.Add("Больше 4 пары у группы");
                     }
                 }
                 foreach (var pair in teacherUnic)
                 {
                     if (pair.Value.k + pair.Value.ch > 4 || pair.Value.k + pair.Value.z > 4)
                     {
-                        fitness.Value += MoreFourLessonPenalty;
-                        fitness.Error.Add("Больше 4 пар у преподавателя");
+                        penalty.Value += MoreFourLessonPenalty;
+                        penalty.Error.Add("Больше 4 пар у преподавателя");
                     }
                 }
             }
             DeletePlan(planOld);
-            return fitness;
+            return penalty;
         }
 
-        public static Fitness LessonCount(Plan planOld)
+        public static Penalty LessonCount(TimetablePlan planOld)
         {
-            Fitness fitness = new Fitness();
-            Plan plan = ComboPlan(planOld);
+            Penalty penalty = new Penalty();
+            TimetablePlan plan = ComboPlan(planOld);
             Dictionary<int, int> unic = new Dictionary<int, int>();
 
-            for (byte day = 0; day < Plan.DaysPerWeek; day++)
+            for (byte day = 0; day < TimetablePlan.DaysPerWeek; day++)
             {
-                for (byte hour = 0; hour < Plan.HoursPerDay; hour++)
+                for (byte hour = 0; hour < TimetablePlan.HoursPerDay; hour++)
                 {
-                    foreach (var pair in plan.HourPlans[day, hour].lessоns)
+                    foreach (var pair in plan.HourTimetablePlan[day, hour].lessоns)
                     {
                         if (pair.Group.Id == -1)
                             if (!unic.ContainsKey(pair.Group.Id))
@@ -489,40 +489,40 @@ namespace Timetable.Controller
             {
                 if (GenAlgoritm.GroupLessen[pair.Key] < pair.Value)
                 {
-                    fitness.Value += LessonCountPenalty;
-                    fitness.Error.Add("Больше пар");
+                    penalty.Value += LessonCountPenalty;
+                    penalty.Error.Add("Больше пар");
                 }
             }
             DeletePlan(planOld);
-            return fitness;
+            return penalty;
         }
 
-        private static Plan ComboPlan(Plan plan)
+        private static TimetablePlan ComboPlan(TimetablePlan plan)
         {
-            for (byte day = 0; day < Plan.DaysPerWeek; day++)
+            for (byte day = 0; day < TimetablePlan.DaysPerWeek; day++)
             {
-                for (byte hour = 0; hour < Plan.HoursPerDay; hour++)
+                for (byte hour = 0; hour < TimetablePlan.HoursPerDay; hour++)
                 {
                     List<GroupGen> group = GenAlgoritm.GroupGenBusy.FindAll(x => x.Audience.day == day && x.Audience.hour == hour);
                     for (int i = 0; i < group.Count; i++)
                     {
                        // if(group[i].Id == -1)
-                        plan.HourPlans[day, hour].AddLesson(group[i], group[i].Audience);
+                        plan.HourTimetablePlan[day, hour].AddLesson(group[i], group[i].Audience);
                     }
                 }
             }
             return plan;
         }
-        private static Plan DeletePlan(Plan plan)
+        private static TimetablePlan DeletePlan(TimetablePlan plan)
         {
-            for (byte day = 0; day < Plan.DaysPerWeek; day++)
+            for (int day = 0; day < TimetablePlan.DaysPerWeek; day++)
             {
-                for (byte hour = 0; hour < Plan.HoursPerDay; hour++)
+                for (int hour = 0; hour < TimetablePlan.HoursPerDay; hour++)
                 {
                     List<GroupGen> group = GenAlgoritm.GroupGenBusy.FindAll(x => x.Audience.day == day && x.Audience.hour == hour);
                     for (int i = 0; i < group.Count; i++)
                     {
-                        plan.HourPlans[day, hour].RemoveLesson(group[i], group[i].Audience);
+                        plan.HourTimetablePlan[day, hour].RemoveLesson(group[i], group[i].Audience);
                     }
                 }
             }
@@ -533,14 +533,14 @@ namespace Timetable.Controller
     /// Генетический алгоритм
     class Gen
     {
-        public static int MaxIterations = 100;
+        public static int iter = 100;
         public static int PopulationCount = 400;//должно делиться на 4
 
-        public List<Func<Plan, Fitness>> FitnessFunctions = new List<Func<Plan, Fitness>>();
+        public List<Func<TimetablePlan, Penalty>> FitnessFunctions = new List<Func<TimetablePlan, Penalty>>();
 
-        public Fitness Fitness(Plan plan)
+        public Penalty Penalty(TimetablePlan plan)
         {
-            Fitness res = new Fitness();
+            Penalty res = new Penalty();
 
             foreach (var f in FitnessFunctions)
                 res += f(plan);
@@ -548,33 +548,34 @@ namespace Timetable.Controller
             return res;
         }
 
-        public Plan Solve(List<Lessоn> lessоn)
+        public TimetablePlan Solve(List<Lessоn> lessоn)
         {
             //создаем популяцию
             Population pop = new Population(lessоn, PopulationCount);
             if (pop.Count == 0)
+            {
                 throw new Exception("Невозможно создать план");
+            }
 
-            var count = MaxIterations;
+            var count = iter;
             while (count-- > 0)
             {
-                //считаем штрафные функции для всех планов
-                pop.ForEach(p => p.FitnessValue = Fitness(p));
-                //сортруем популяцию по штрафам
-                pop.Sort((p1, p2) => p1.FitnessValue.Value.CompareTo(p2.FitnessValue.Value));
+                pop.ForEach(p => p.PenaltyValue = Penalty(p));
+                pop.Sort((p1, p2) => p1.PenaltyValue.Value.CompareTo(p2.PenaltyValue.Value));
 
                 if (pop.Count == 0) throw new Exception("Невозможно создать план");
 
-                if (pop[0].FitnessValue.Value == 0)
+                if (pop[0].PenaltyValue.Value == 0)
                 {
                     return pop[0];
                 }
 
-                //отбираем 25% лучших планов
-                if (25 % pop.Count != 0)
-                    pop.RemoveRange(25 % pop.Count, pop.Count - 25 % pop.Count);
+                if (20 % pop.Count != 0)
+                {
+                    pop.RemoveRange(20 % pop.Count, pop.Count - 20 % pop.Count);
+                }
                 //от каждого создаем трех потомков с мутациями
-                var c = pop.Count;
+                int c = pop.Count;
                 for (int i = 0; i < c; i++)
                 {
                     pop.AddChildOfParent(pop[i]);
@@ -584,9 +585,9 @@ namespace Timetable.Controller
             }
 
             //считаем штрафные функции для всех планов
-            pop.ForEach(p => p.FitnessValue = Fitness(p));
+            pop.ForEach(p => p.PenaltyValue = Penalty(p));
             //сортруем популяцию по сумме штрафов
-            pop.Sort((p1, p2) => p1.FitnessValue.Value.CompareTo(p2.FitnessValue.Value));
+            pop.Sort((p1, p2) => p1.PenaltyValue.Value.CompareTo(p2.PenaltyValue.Value));
 
             //возвращаем лучший план
             return pop[0];
@@ -594,27 +595,29 @@ namespace Timetable.Controller
     }
 
     /// Популяция планов
-    class Population : List<Plan>
+    class Population : List<TimetablePlan>
     {
         public Population(List<Lessоn> lessоn, int count)
         {
-            var maxIterations = count * 2;
+            int i = count * 2;
 
             do
             {
-                var plan = new Plan();
+                TimetablePlan plan = new TimetablePlan();
                 if (plan.Init(lessоn))
+                {
                     Add(plan);
-            } while (maxIterations-- > 0 && Count < count);
+                }
+            }while (i -- > 0 && Count < count);
         }
 
-        public bool AddChildOfParent(Plan parent)
+        public bool AddChildOfParent(TimetablePlan parent)
         {
-            int maxIterations = 30;
+            int i = 30;
 
             do
             {
-                var plan = new Plan();
+                TimetablePlan plan = new TimetablePlan();
                 if (plan.Init(parent))
                 {
                     Add(plan);
@@ -622,53 +625,51 @@ namespace Timetable.Controller
                     return true;
                 }
 
-            } while (maxIterations-- > 0);
+            } while (i-- > 0);
             return false;
         }
     }
 
-    class Fitness
+    class Penalty
     {
         public int Value { get; internal set; }
         public List<string> Error { get; internal set; } = new List<string>();
 
-        public static Fitness operator +(Fitness left, Fitness rihgt)
+        public static Penalty operator +(Penalty left, Penalty rihgt)
         {
             List<string> strings = new List<string>(left.Error);
             strings.AddRange(rihgt.Error);
-            return new Fitness() { Value = left.Value + rihgt.Value, Error = strings };
+            return new Penalty() { Value = left.Value + rihgt.Value, Error = strings };
         }
 
     }
 
     /// План занятий
-    class Plan
+    class TimetablePlan
     {
         public static int DaysPerWeek = 6;//6 учебных дня в неделю
         public static int HoursPerDay = 6;//до 6 пар в день
 
-        static Random rnd = new Random();
-
         /// План по дням (первый индекс) и часам (второй индекс)
-        public HourPlan[,] HourPlans = new HourPlan[DaysPerWeek, HoursPerDay];
+        public HourTimetablePlan[,] HourTimetablePlan = new HourTimetablePlan[DaysPerWeek, HoursPerDay];
 
 
-        public Fitness FitnessValue { get; set; }
+        public Penalty PenaltyValue { get; set; }
 
         public bool AddLesson(Lessоn les)
         {
-            return HourPlans[les.Day, les.Hour].AddLesson(les.Group, les.Group.Audience);
+            return HourTimetablePlan[les.Day, les.Hour].AddLesson(les.Group, les.Group.Audience);
         }
 
         public void RemoveLesson(Lessоn les)
         {
-            HourPlans[les.Day, les.Hour].RemoveLesson(les.Group, les.Group.Audience);
+            HourTimetablePlan[les.Day, les.Hour].RemoveLesson(les.Group, les.Group.Audience);
         }
 
         /// Добавить группу с преподом на любой день и любой час
         public bool AddToAnyDayAndHour(GroupGen group, AudienceDayHour audience)
         {
-            int maxIterations = 40;
+            int i = 40;
             do
             {
                 List<AudienceDayHour> sortType = new List<AudienceDayHour>();
@@ -681,31 +682,36 @@ namespace Timetable.Controller
                     sortType = GenAlgoritm.AudienceList.FindAll(x => x.TypeAudiens != "лабораторная" && x.CapacityAudiens >= group.Amount && x.CapacityAudiens - group.Amount - 5 <= group.Amount);
                 }
 
-                Random test = new Random();
-                int x = test.Next(sortType.Count);
+                Random random = new Random();
+                int x = random.Next(sortType.Count);
                 if (sortType.Count == 0) return false;
                 audience = sortType[x];
 
-                int day = rnd.Next(DaysPerWeek);
+                int day = random.Next(DaysPerWeek);
                 if (AddToAnyHour(day, group, audience))
+                {
                     return true;
-            } while (maxIterations-- > 0);
+                }
+            } while (i-- > 0);
 
-            return false;//не смогли добавить никуда
+            return false;
         }
 
         /// Добавить группу с преподом на любой час
         bool AddToAnyHour(int day, GroupGen group, AudienceDayHour audience)
         {
-
-            int hour = rnd.Next(HoursPerDay);
+            Random random = new Random();
+            int hour = random.Next(HoursPerDay);
             Lessоn les = new Lessоn(day, hour, group, audience);
             //  тут проверка на занятое время
             if (DayHourAudiensFree(day, hour, audience, group))
+            {
                 if (AddLesson(les))
+                {
                     return true;
-
-            return false;//нет свободных часов в этот день
+                }
+            }
+            return false;
         }
 
         bool DayHourAudiensFree(int day, int hour, AudienceDayHour audience, GroupGen group)
@@ -735,29 +741,36 @@ namespace Timetable.Controller
         public bool Init(List<Lessоn> lessоns)
         {
             for (int i = 0; i < HoursPerDay; i++)
-                for (int j = 0; j < DaysPerWeek; j++)
-                    HourPlans[j, i] = new HourPlan();
-
-            foreach (var p in lessоns)
             {
+                for (int j = 0; j < DaysPerWeek; j++)
+                {
+                    HourTimetablePlan[j, i] = new HourTimetablePlan();
+                }
+            }
 
+            foreach (Lessоn p in lessоns)
+            {
                 if (!AddToAnyDayAndHour(p.Group, p.Group.Audience))
-                    return false;
+                { 
+                    return false; 
+                }
+                   
             }
             return true;
         }
 
         /// Создание наследника с мутацией
-        public bool Init(Plan parent)
+        public bool Init(TimetablePlan parent)
         {
             //копируем предка
             for (int i = 0; i < HoursPerDay; i++)
                 for (int j = 0; j < DaysPerWeek; j++)
-                    HourPlans[j, i] = parent.HourPlans[j, i].Clone();
-
+                    HourTimetablePlan[j, i] = parent.HourTimetablePlan[j, i].Clone();
+            
+            Random random = new Random();
             //выбираем два случайных дня
-            var day1 = (byte)rnd.Next(DaysPerWeek);
-            var day2 = (byte)rnd.Next(DaysPerWeek);
+            var day1 = (byte)random.Next(DaysPerWeek);
+            var day2 = (byte)random.Next(DaysPerWeek);
 
             //находим пары в эти дни
             var pairs1 = GetLessonsOfDay(day1).ToList();
@@ -765,8 +778,8 @@ namespace Timetable.Controller
 
             //выбираем случайные пары
             if (pairs1.Count == 0 || pairs2.Count == 0) return false;
-            var pair1 = pairs1[rnd.Next(pairs1.Count)];
-            var pair2 = pairs2[rnd.Next(pairs2.Count)];
+            var pair1 = pairs1[random.Next(pairs1.Count)];
+            var pair2 = pairs2[random.Next(pairs2.Count)];
 
             //создаем мутацию - переставляем случайные пары местами
             RemoveLesson(pair1);//удаляем
@@ -779,7 +792,7 @@ namespace Timetable.Controller
         public IEnumerable<Lessоn> GetLessonsOfDay(int day)
         {
             for (byte hour = 0; hour < HoursPerDay; hour++)
-                foreach (var p in HourPlans[day, hour].lessоns)
+                foreach (var p in HourTimetablePlan[day, hour].lessоns)
                     yield return new Lessоn(day, hour, p.Group, p.Group.Audience);
         }
 
@@ -787,7 +800,7 @@ namespace Timetable.Controller
         {
             for (byte day = 0; day < DaysPerWeek; day++)
                 for (byte hour = 0; hour < HoursPerDay; hour++)
-                    foreach (var p in HourPlans[day, hour].lessоns)
+                    foreach (var p in HourTimetablePlan[day, hour].lessоns)
                         yield return new Lessоn(day, hour, p.Group, p.Group.Audience);
         }
 
@@ -795,7 +808,7 @@ namespace Timetable.Controller
     }
 
     /// План на час
-    class HourPlan
+    class HourTimetablePlan
     {
 
         public List<Lessоn> lessоns = new List<Lessоn>();
@@ -864,9 +877,9 @@ namespace Timetable.Controller
                 lessоns.RemoveAt(index);
         }
 
-        public HourPlan Clone()
+        public HourTimetablePlan Clone()
         {
-            var res = new HourPlan();
+            var res = new HourTimetablePlan();
             res.lessоns = new List<Lessоn>(lessоns);
             return res;
         }
